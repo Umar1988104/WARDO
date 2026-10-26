@@ -1,16 +1,16 @@
 import Screen from '../components/Screen.jsx'
 
-const STATS = [
-  { label: 'Items', value: 0 },
-  { label: 'Outfits planned', value: 0 },
-  { label: 'Not worn lately', value: 0 },
-]
+export default function Insights({ itemCount = 0 }) {
+  const stats = [
+    { label: 'Items', value: itemCount },
+    { label: 'Outfits planned', value: 0 },
+    { label: 'Not worn lately', value: 0 },
+  ]
 
-export default function Insights() {
   return (
     <Screen title="Insights">
       <div className="stats">
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div key={s.label} className="stat glass">
             <strong>{s.value}</strong>
             <span>{s.label}</span>
