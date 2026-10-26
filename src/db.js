@@ -7,3 +7,11 @@ db.version(1).stores({
   // only indexed fields are listed; blobs and other fields are stored too
   items: '++id, section, createdAt',
 })
+
+db.version(2).stores({
+  items: '++id, section, createdAt',
+  // one row each time a piece is worn: { itemId, date: 'YYYY-MM-DD' }
+  wears: '++id, itemId, date, [itemId+date]',
+  // one planned outfit per day: { date, itemIds[], note, worn }
+  outfits: 'date',
+})

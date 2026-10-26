@@ -42,3 +42,21 @@ export const SORTS = [
   { id: 'old', label: 'Oldest' },
   { id: 'name', label: 'Name' },
 ]
+
+// How each category is used when building outfit suggestions.
+export const ROLE = {
+  'T-shirt': 'top',
+  Shirt: 'top',
+  Kurta: 'top',
+  Jeans: 'bottom',
+  Trousers: 'bottom',
+  Shorts: 'bottom',
+  'Track pants': 'bottom',
+  Jacket: 'layer',
+  Coat: 'layer',
+  Sweater: 'layer',
+  Hoodie: 'layer',
+  Shoes: 'shoes',
+}
+
+export const NEUTRALS = ['Black', 'White', 'Grey', 'Navy', 'Beige']

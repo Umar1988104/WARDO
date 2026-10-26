@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
-import { db } from './db.js'
+import { useEffect, useState } from 'react'
+import useData from './useData.js'
+import { todayKey } from './lib/dates.js'
 import TabBar from './components/TabBar.jsx'
 import AddItem from './components/AddItem.jsx'
 import ItemDetail from './components/ItemDetail.jsx'
@@ -24,20 +25,9 @@ export default function App() {
   const [addOpen, setAddOpen] = useState(false)
   const [openId, setOpenId] = useState(null)
   const [editId, setEditId] = useState(null)
-  const [items, setItems] = useState([])
   const [theme, setTheme] = useState(loadTheme)
 
-  const refresh = useCallback(async () => {
-    try {
-      setItems(await db.items.orderBy('createdAt').reverse().toArray())
-    } catch (err) {
-      console.error('Could not read the wardrobe:', err)
-    }
-  }, [])
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const { items, wearInfo, outfitMap, outfits, actions } = useData()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -55,21 +45,20 @@ export default function App() {
   }, [theme])
 
   async function handleSaved(section) {
-    await refresh()
+    await actions.refresh()
     setAddOpen(false)
     setTab('wardrobe')
     setSectionId(section)
   }
 
   async function handleDelete(id) {
-    await db.items.delete(id)
     setOpenId(null)
-    await refresh()
+    await actions.deleteItem(id)
   }
 
   async function handleEdited() {
     setEditId(null)
-    await refresh()
+    await actions.refresh()
   }
 
   const openItem = items.find((i) => i.id === openId)
@@ -82,6 +71,9 @@ export default function App() {
       {tab === 'wardrobe' && (
         <Wardrobe
           items={items}
+          wearInfo={wearInfo}
+          outfitMap={outfitMap}
+          actions={actions}
           sectionId={sectionId}
           setSectionId={setSectionId}
           onAdd={() => setAddOpen(true)}
@@ -89,8 +81,12 @@ export default function App() {
           onOpenItem={setOpenId}
         />
       )}
-      {tab === 'planner' && <Planner />}
-      {tab === 'insights' && <Insights itemCount={items.length} />}
+      {tab === 'planner' && (
+        <Planner items={items} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
+      )}
+      {tab === 'insights' && (
+        <Insights items={items} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} />
+      )}
       {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} />}
 
       <ThemeToggle theme={theme} setTheme={setTheme} />
@@ -104,7 +100,15 @@ export default function App() {
       />
 
       {openItem && (
-        <ItemDetail item={openItem} onClose={() => setOpenId(null)} onEdit={setEditId} onDelete={handleDelete} />
+        <ItemDetail
+          item={openItem}
+          wear={wearInfo[openItem.id]}
+          wornToday={!!wearInfo[openItem.id]?.dates.has(todayKey())}
+          onToggleWorn={actions.toggleWorn}
+          onClose={() => setOpenId(null)}
+          onEdit={setEditId}
+          onDelete={handleDelete}
+        />
       )}
       {editItem && <EditItem item={editItem} onClose={() => setEditId(null)} onSaved={handleEdited} />}
       {addOpen && <AddItem itemCount={items.length} onClose={() => setAddOpen(false)} onSaved={handleSaved} />}

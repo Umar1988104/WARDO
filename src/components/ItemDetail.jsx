@@ -2,8 +2,9 @@ import { useState } from 'react'
 import ItemImage from './ItemImage.jsx'
 import { sectionById } from '../sections.js'
 import { colorHex } from '../options.js'
+import { agoText } from '../lib/dates.js'
 
-export default function ItemDetail({ item, onClose, onEdit, onDelete }) {
+export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onClose, onEdit, onDelete }) {
   const [side, setSide] = useState('front')
   const [confirm, setConfirm] = useState(false)
   const section = sectionById(item.section)
@@ -60,6 +61,16 @@ export default function ItemDetail({ item, onClose, onEdit, onDelete }) {
           <p className="muted">
             {section?.label} · Added {added}
           </p>
+        </div>
+
+        <div className="wearbox glass">
+          <div>
+            <strong>{wear && wear.count > 0 ? `Worn ${wear.count} ${wear.count === 1 ? 'time' : 'times'}` : 'Not worn yet'}</strong>
+            <span className="muted">{wear && wear.last ? `Last worn ${agoText(wear.last)}` : 'Mark it when you wear it'}</span>
+          </div>
+          <button className={'pill' + (wornToday ? '' : ' pill-accent')} onClick={() => onToggleWorn(item.id)}>
+            {wornToday ? 'Worn today ✓ Undo' : 'I wore this today'}
+          </button>
         </div>
 
         {(item.color || facts.length > 0) && (

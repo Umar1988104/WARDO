@@ -1272,3 +1272,285 @@ p {
 .note p {
   white-space: pre-wrap;
 }
+
+/* =========================================================
+   v0.6 / v0.7: wear tracking, planner, suggestions
+   ========================================================= */
+
+.small {
+  font-size: 13px;
+}
+
+.pill-accent {
+  color: #fff;
+  background: var(--accent-grad);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(80, 70, 230, 0.35);
+}
+
+/* item badges (e.g. "45 days ago", "5×") */
+.item-thumb {
+  position: relative;
+}
+.item-badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  max-width: calc(100% - 12px);
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--text);
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* hero extras */
+.hero-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hero-btn-ghost {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.ostrip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ostrip::-webkit-scrollbar {
+  display: none;
+}
+.othumb {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 84px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 14px rgba(20, 20, 90, 0.22);
+}
+.othumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.daypanel .othumb,
+.proposal .othumb {
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 80px;
+  height: 94px;
+}
+
+/* wear box on the item page */
+.wearbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 20px;
+}
+.wearbox > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wearbox span {
+  font-size: 13px;
+}
+
+/* planner calendar */
+.cal {
+  border-radius: 26px;
+  padding: 12px 12px 14px;
+}
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 10px;
+}
+.cal-head strong {
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+.cal-nav {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--accent);
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-border);
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.cal-dow {
+  padding: 4px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.day {
+  position: relative;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 550;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.day:active {
+  transform: scale(0.92);
+}
+.day-today {
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.day-sel {
+  color: #fff;
+  background: var(--accent-grad);
+  box-shadow: 0 6px 14px rgba(80, 70, 230, 0.35);
+}
+.day-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.day-dot-worn {
+  background: #12b886;
+}
+.day-sel .day-dot {
+  background: #fff;
+}
+
+.daypanel {
+  border-radius: 26px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.daypanel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.daypanel-head h2 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.daypanel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.suggest,
+.proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+}
+.proposal {
+  border-top: 0;
+  padding-top: 0;
+}
+.suggest .pill {
+  align-self: flex-start;
+}
+
+/* outfit picker */
+.pk-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.pk {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.pk-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 8px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--tint), transparent 80%), var(--glass-solid);
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.pk-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.pk:active .pk-thumb {
+  transform: scale(0.96);
+}
+.pk-on .pk-thumb {
+  border-color: var(--accent);
+}
+.pk-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: none;
+  place-items: center;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent-grad);
+}
+.pk-on .pk-check {
+  display: grid;
+}
+.pk-name {
+  padding: 0 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.picker {
+  z-index: 65;
+}

@@ -1,24 +1,13 @@
 import { useMemo, useState } from 'react'
 import Screen from '../components/Screen.jsx'
-import ItemImage from '../components/ItemImage.jsx'
+import ItemCard from '../components/ItemCard.jsx'
+import TodayCard from '../components/TodayCard.jsx'
 import FilterSheet from '../components/FilterSheet.jsx'
-import { CalendarIcon, SearchIcon, FilterIcon } from '../components/Icons.jsx'
+import { SearchIcon, FilterIcon } from '../components/Icons.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
 import { EMPTY_FILTERS, applyFilters, countActive, sortItems } from '../lib/filter.js'
 
-function ItemCard({ item, onOpen, small }) {
-  const tone = sectionById(item.section)?.tone || 'blue'
-  return (
-    <button className={'item-card tone-' + tone + (small ? ' item-card-small' : '')} onClick={() => onOpen(item.id)}>
-      <span className="item-thumb">
-        <ItemImage blob={item.front} alt={item.name} />
-      </span>
-      <span className="item-name">{item.name}</span>
-    </button>
-  )
-}
-
-export default function Wardrobe({ items, sectionId, setSectionId, onAdd, onPlan, onOpenItem }) {
+export default function Wardrobe({ items, wearInfo, outfitMap, actions, sectionId, setSectionId, onAdd, onPlan, onOpenItem }) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [sort, setSort] = useState('new')
@@ -120,16 +109,14 @@ export default function Wardrobe({ items, sectionId, setSectionId, onAdd, onPlan
         )
       ) : (
         <>
-          <section className="hero">
-            <div className="hero-text">
-              <h2>What are you wearing tomorrow?</h2>
-              <p>Add a few clothes, then plan your outfit in one tap.</p>
-            </div>
-            <button className="hero-btn" onClick={onPlan}>
-              <CalendarIcon />
-              Plan outfit
-            </button>
-          </section>
+          <TodayCard
+            items={items}
+            outfitMap={outfitMap}
+            wearInfo={wearInfo}
+            actions={actions}
+            onPlan={onPlan}
+            onOpenItem={onOpenItem}
+          />
 
           <h3 className="section-title">Sections</h3>
           <div className="tiles">
