@@ -49,7 +49,7 @@ export default function OutfitPicker({ items, initialIds = [], initialNote = '',
                   onClick={() => toggle(item.id)}
                 >
                   <span className="pk-thumb">
-                    <ItemImage blob={item.front} alt={item.name} />
+                    <ItemImage blob={item.thumb || item.front} alt={item.name} />
                     <i className="pk-check" aria-hidden="true">
                       ✓
                     </i>

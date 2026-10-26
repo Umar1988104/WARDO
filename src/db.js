@@ -15,3 +15,12 @@ db.version(2).stores({
   // one planned outfit per day: { date, itemIds[], note, worn }
   outfits: 'date',
 })
+
+// v0.8: folders. A folder lives inside one section; a piece sits in at most one folder.
+db.version(3).stores({
+  items: '++id, section, folderId, createdAt',
+  wears: '++id, itemId, date, [itemId+date]',
+  outfits: 'date',
+  // { id, name, section, createdAt }
+  folders: '++id, section',
+})

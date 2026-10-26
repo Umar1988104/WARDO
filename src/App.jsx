@@ -22,12 +22,13 @@ function loadTheme() {
 export default function App() {
   const [tab, setTab] = useState('wardrobe')
   const [sectionId, setSectionId] = useState(null)
+  const [folderId, setFolderId] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
   const [openId, setOpenId] = useState(null)
   const [editId, setEditId] = useState(null)
   const [theme, setTheme] = useState(loadTheme)
 
-  const { items, wearInfo, outfitMap, outfits, actions } = useData()
+  const { items, folders, wearInfo, outfitMap, outfits, actions } = useData()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -44,11 +45,12 @@ export default function App() {
     })
   }, [theme])
 
-  async function handleSaved(section) {
+  async function handleSaved(section, folder = null) {
     await actions.refresh()
     setAddOpen(false)
     setTab('wardrobe')
     setSectionId(section)
+    setFolderId(folder)
   }
 
   async function handleDelete(id) {
@@ -71,13 +73,20 @@ export default function App() {
       {tab === 'wardrobe' && (
         <Wardrobe
           items={items}
+          folders={folders}
           wearInfo={wearInfo}
           outfitMap={outfitMap}
           actions={actions}
           sectionId={sectionId}
-          setSectionId={setSectionId}
+          setSectionId={(id) => {
+            setSectionId(id)
+            setFolderId(null)
+          }}
+          folderId={folderId}
+          setFolderId={setFolderId}
           onAdd={() => setAddOpen(true)}
           onPlan={() => setTab('planner')}
+          onOpenSettings={() => setTab('settings')}
           onOpenItem={setOpenId}
         />
       )}
@@ -87,14 +96,17 @@ export default function App() {
       {tab === 'insights' && (
         <Insights items={items} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} />
       )}
-      {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} />}
+      {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} itemCount={items.length} actions={actions} />}
 
       <ThemeToggle theme={theme} setTheme={setTheme} />
       <TabBar
         tab={tab}
         setTab={(t) => {
           setTab(t)
-          if (t === 'wardrobe') setSectionId(null)
+          if (t === 'wardrobe') {
+            setSectionId(null)
+            setFolderId(null)
+          }
         }}
         onAdd={() => setAddOpen(true)}
       />
@@ -110,8 +122,18 @@ export default function App() {
           onDelete={handleDelete}
         />
       )}
-      {editItem && <EditItem item={editItem} onClose={() => setEditId(null)} onSaved={handleEdited} />}
-      {addOpen && <AddItem itemCount={items.length} onClose={() => setAddOpen(false)} onSaved={handleSaved} />}
+      {editItem && <EditItem item={editItem} folders={folders} actions={actions} onClose={() => setEditId(null)} onSaved={handleEdited} />}
+      {addOpen && (
+        <AddItem
+          itemCount={items.length}
+          folders={folders}
+          actions={actions}
+          defaultSection={tab === 'wardrobe' ? sectionId : null}
+          defaultFolderId={tab === 'wardrobe' ? folderId : null}
+          onClose={() => setAddOpen(false)}
+          onSaved={handleSaved}
+        />
+      )}
     </div>
   )
 }

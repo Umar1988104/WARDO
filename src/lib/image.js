@@ -163,3 +163,46 @@ export async function dominantColor(blob) {
   }
   return best
 }
+
+// ---------- v0.8: smaller files, faster screens ----------
+
+// Small preview used in grids. Decoding a 360 px picture is far cheaper than a 1024 px one,
+// which is what keeps scrolling smooth and the phone cool.
+export async function makeThumb(blob, max = 360) {
+  const bmp = await createImageBitmap(blob)
+  try {
+    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height))
+    const w = Math.max(1, Math.round(bmp.width * scale))
+    const h = Math.max(1, Math.round(bmp.height * scale))
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(bmp, 0, 0, w, h)
+    // browsers that cannot write WebP quietly give back a PNG, which is fine too
+    return await canvasToBlob(canvas, 'image/webp', 0.85)
+  } finally {
+    bmp.close?.()
+  }
+}
+
+// Re-saves a cutout as WebP (keeps transparency, usually 4-6x smaller than PNG).
+// If the browser cannot do it, or it would not be smaller, the original is kept.
+export async function compactImage(blob) {
+  try {
+    const bmp = await createImageBitmap(blob)
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = bmp.width
+      canvas.height = bmp.height
+      canvas.getContext('2d').drawImage(bmp, 0, 0)
+      const out = await canvasToBlob(canvas, 'image/webp', 0.92)
+      return out.type === 'image/webp' && out.size < blob.size ? out : blob
+    } finally {
+      bmp.close?.()
+    }
+  } catch {
+    return blob
+  }
+}

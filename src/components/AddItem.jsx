@@ -1,11 +1,15 @@
 import { useRef, useState } from 'react'
 import { db } from '../db.js'
 import { defaultSeason } from '../options.js'
-import { downscale, cutout, trimTransparent, dominantColor } from '../lib/image.js'
+import { downscale, cutout, trimTransparent, dominantColor, makeThumb, compactImage } from '../lib/image.js'
 import ItemImage from './ItemImage.jsx'
 import TouchUp from './TouchUp.jsx'
+import ManualCut from './ManualCut.jsx'
+import Segmented from './Segmented.jsx'
 import SectionPicker from './SectionPicker.jsx'
 import DetailsForm from './DetailsForm.jsx'
+import FolderField from './FolderField.jsx'
+import FolderSheet from './FolderSheet.jsx'
 
 const SLOTS = [
   { id: 'front', label: 'Front' },
@@ -14,7 +18,20 @@ const SLOTS = [
 
 const EMPTY_DETAILS = { category: null, color: null, season: null, occasions: [], tags: [], notes: '' }
 
-export default function AddItem({ itemCount, onClose, onSaved }) {
+const CUT_MODES = [
+  { value: 'auto', label: 'Auto cutout' },
+  { value: 'manual', label: 'Cut out myself' },
+]
+
+function loadCutMode() {
+  try {
+    return localStorage.getItem('wardo-cut-mode') === 'manual' ? 'manual' : 'auto'
+  } catch {
+    return 'auto'
+  }
+}
+
+export default function AddItem({ itemCount, folders, actions, defaultSection = null, defaultFolderId = null, onClose, onSaved }) {
   const cameraRef = useRef(null)
   const galleryRef = useRef(null)
   const targetRef = useRef('front')
@@ -24,13 +41,31 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
   const [busy, setBusy] = useState(null) // { slot, message, pct }
   const [notice, setNotice] = useState('')
   const [editing, setEditing] = useState(null) // 'front' | 'back'
+  const [manual, setManual] = useState(null) // { slot, original } while the by-hand cutout is open
+  const [cutMode, setCutModeState] = useState(loadCutMode)
   const [name, setName] = useState('')
-  const [section, setSection] = useState(null)
+  const [section, setSection] = useState(defaultSection)
+  const [folderId, setFolderId] = useState(defaultSection ? defaultFolderId : null)
+  const [folderSheet, setFolderSheet] = useState(false)
   const [details, setDetails] = useState(EMPTY_DETAILS)
   const [more, setMore] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const setPhoto = (slot, value) => setPhotos((p) => ({ ...p, [slot]: value }))
+
+  function setCutMode(mode) {
+    setCutModeState(mode)
+    try {
+      localStorage.setItem('wardo-cut-mode', mode)
+    } catch {
+      /* the choice just will not be remembered */
+    }
+  }
+
+  function chooseSection(id) {
+    if (id !== section) setFolderId(null) // folders belong to one section
+    setSection(id)
+  }
 
   function updateDetails(patch) {
     if ('color' in patch) colorTouched.current = true
@@ -65,6 +100,12 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
     try {
       const original = await downscale(file)
 
+      if (cutMode === 'manual') {
+        // no AI model to download: you cut it out yourself
+        setManual({ slot, original })
+        return
+      }
+
       let raw
       let lastPct = -1
       try {
@@ -84,7 +125,7 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
         console.error('Cutout failed:', err)
         raw = original
         setNotice(
-          'Automatic cutout did not work, so your original photo is shown. You can erase the background by hand with Touch up, or try another photo.'
+          'Automatic cutout did not work, so your original photo is shown. Tap Cut by hand to outline the clothing yourself, or try another photo.'
         )
       }
 
@@ -110,10 +151,33 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
     }
   }
 
+  async function finishManual(blob) {
+    const { slot, original } = manual
+    try {
+      const final = await trimTransparent(blob)
+      setPhoto(slot, { original, raw: blob, final })
+      if (slot === 'front') autoColor(final)
+    } catch (err) {
+      setNotice(err?.message || 'Something went wrong with this photo.')
+    } finally {
+      setManual(null)
+    }
+  }
+
+  async function newFolder(folderName) {
+    const id = await actions.createFolder(section, folderName)
+    setFolderId(id)
+    setFolderSheet(false)
+  }
+
   async function save() {
     setSaving(true)
     try {
       const now = Date.now()
+      // smaller files on the phone, plus a tiny preview so grids stay fast
+      const front = await compactImage(photos.front.final)
+      const back = photos.back ? await compactImage(photos.back.final) : null
+      const thumb = await makeThumb(front)
       await db.items.add({
         name: name.trim() || `Item ${itemCount + 1}`,
         section,
@@ -123,14 +187,16 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
         occasions: details.occasions,
         tags: details.tags,
         notes: details.notes.trim(),
-        front: photos.front.final,
-        back: photos.back ? photos.back.final : null,
+        folderId: folderId ?? null,
+        front,
+        back,
+        thumb,
         createdAt: now,
         updatedAt: now,
       })
       // ask the browser not to clear our storage when the phone is low on space
       navigator.storage?.persist?.()
-      onSaved(section)
+      onSaved(section, folderId ?? null)
     } catch (err) {
       console.error(err)
       setNotice('Could not save this item on your phone. Check that storage is not full and try again.')
@@ -151,7 +217,12 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
       </header>
 
       <div className="ov-body">
-        <p className="muted tip">Use a plain, contrasting background and good light for the cleanest cutout.</p>
+        <Segmented options={CUT_MODES} value={cutMode} onChange={setCutMode} />
+        <p className="muted tip">
+          {cutMode === 'auto'
+            ? 'Use a plain, contrasting background and good light for the cleanest cutout.'
+            : 'After you pick a photo, draw around the clothing with your finger. No download needed, and it is light on your phone.'}
+        </p>
 
         <div className="slots">
           {SLOTS.map(({ id, label }) => {
@@ -183,6 +254,9 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
                   </button>
                   {photo && (
                     <>
+                      <button className="pill" disabled={!!busy} onClick={() => setManual({ slot: id, original: photo.original })}>
+                        Cut by hand
+                      </button>
                       <button className="pill" disabled={!!busy} onClick={() => setEditing(id)}>
                         Touch up
                       </button>
@@ -213,8 +287,10 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
 
         <div className="field">
           <span>Section</span>
-          <SectionPicker value={section} onChange={setSection} />
+          <SectionPicker value={section} onChange={chooseSection} />
         </div>
+
+        <FolderField section={section} folders={folders} value={folderId} onChange={setFolderId} onNew={() => setFolderSheet(true)} />
 
         <button type="button" className="more-toggle glass" aria-expanded={more} onClick={() => setMore(!more)}>
           <span>
@@ -236,6 +312,18 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
 
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={onFile} />
       <input ref={galleryRef} type="file" accept="image/*" hidden onChange={onFile} />
+
+      {manual && <ManualCut originalBlob={manual.original} onDone={finishManual} onCancel={() => setManual(null)} />}
+
+      {folderSheet && (
+        <FolderSheet
+          title="New folder"
+          cta="Create folder"
+          takenNames={folders.filter((f) => f.section === section).map((f) => f.name)}
+          onClose={() => setFolderSheet(false)}
+          onSave={newFolder}
+        />
+      )}
 
       {editing && photos[editing] && (
         <TouchUp

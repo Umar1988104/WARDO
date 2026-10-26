@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
 import Screen from '../components/Screen.jsx'
 import ItemCard from '../components/ItemCard.jsx'
+import ItemGrid from '../components/ItemGrid.jsx'
+import BackupNudge from '../components/BackupNudge.jsx'
+import SectionScreen from './SectionScreen.jsx'
 import TodayCard from '../components/TodayCard.jsx'
 import FilterSheet from '../components/FilterSheet.jsx'
 import { SearchIcon, FilterIcon } from '../components/Icons.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
 import { EMPTY_FILTERS, applyFilters, countActive, sortItems } from '../lib/filter.js'
 
-export default function Wardrobe({ items, wearInfo, outfitMap, actions, sectionId, setSectionId, onAdd, onPlan, onOpenItem }) {
+export default function Wardrobe({ items, folders, wearInfo, outfitMap, actions, sectionId, setSectionId, folderId, setFolderId, onAdd, onPlan, onOpenSettings, onOpenItem }) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [sort, setSort] = useState('new')
@@ -18,6 +21,11 @@ export default function Wardrobe({ items, wearInfo, outfitMap, actions, sectionI
   const resultsMode = showAll || query.trim() !== '' || activeCount > 0
 
   const results = useMemo(() => sortItems(applyFilters(items, query, filters), sort), [items, query, filters, sort])
+  const sectionCounts = useMemo(() => {
+    const map = {}
+    for (const i of items) map[i.section] = (map[i.section] || 0) + 1
+    return map
+  }, [items])
   const categories = useMemo(() => [...new Set(items.map((i) => i.category).filter(Boolean))].sort(), [items])
 
   function leaveResults() {
@@ -30,28 +38,18 @@ export default function Wardrobe({ items, wearInfo, outfitMap, actions, sectionI
   const section = sectionById(sectionId)
 
   if (section) {
-    const inSection = items.filter((i) => i.section === section.id)
     return (
-      <Screen title={section.label} back={{ label: 'Wardrobe', onClick: () => setSectionId(null) }}>
-        {inSection.length === 0 ? (
-          <div className={'empty glass tone-' + section.tone}>
-            <div className="chip">
-              <section.Icon />
-            </div>
-            <h2>No {section.label.toLowerCase()} items yet</h2>
-            <p className="muted">Photograph a piece and it will appear here as a clean cutout.</p>
-            <button className="btn-primary" onClick={onAdd}>
-              Add an item
-            </button>
-          </div>
-        ) : (
-          <div className="item-grid">
-            {inSection.map((item) => (
-              <ItemCard key={item.id} item={item} onOpen={onOpenItem} />
-            ))}
-          </div>
-        )}
-      </Screen>
+      <SectionScreen
+        section={section}
+        folders={folders}
+        folderId={folderId}
+        setFolderId={setFolderId}
+        items={items}
+        actions={actions}
+        onBack={() => setSectionId(null)}
+        onAdd={onAdd}
+        onOpenItem={onOpenItem}
+      />
     )
   }
 
@@ -100,15 +98,13 @@ export default function Wardrobe({ items, wearInfo, outfitMap, actions, sectionI
             <p className="muted results-count">
               {results.length} {results.length === 1 ? 'item' : 'items'}
             </p>
-            <div className="item-grid">
-              {results.map((item) => (
-                <ItemCard key={item.id} item={item} onOpen={onOpenItem} />
-              ))}
-            </div>
+            <ItemGrid items={results} onOpen={onOpenItem} />
           </>
         )
       ) : (
         <>
+          <BackupNudge count={items.length} onOpen={onOpenSettings} />
+
           <TodayCard
             items={items}
             outfitMap={outfitMap}
@@ -121,7 +117,7 @@ export default function Wardrobe({ items, wearInfo, outfitMap, actions, sectionI
           <h3 className="section-title">Sections</h3>
           <div className="tiles">
             {SECTIONS.map((s) => {
-              const count = items.filter((i) => i.section === s.id).length
+              const count = sectionCounts[s.id] || 0
               return (
                 <button key={s.id} className={'tile glass tone-' + s.tone} onClick={() => setSectionId(s.id)}>
                   <span className="chip">

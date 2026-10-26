@@ -96,3 +96,9 @@ export const FilterIcon = () => (
     <path d="M4 7h16M7 12h10M10 17h4" />
   </svg>
 )
+
+export const FolderIcon = () => (
+  <svg {...base}>
+    <path d="M3.5 7.5a2.5 2.5 0 0 1 2.5-2.5h3.2c.7 0 1.3.3 1.7.8l.9 1.2h5.7a2.5 2.5 0 0 1 2.5 2.5v7.5A2.5 2.5 0 0 1 17.5 19H6a2.5 2.5 0 0 1-2.5-2.5Z" />
+  </svg>
+)
