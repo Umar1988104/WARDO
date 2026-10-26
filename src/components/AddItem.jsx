@@ -1,19 +1,24 @@
 import { useRef, useState } from 'react'
 import { db } from '../db.js'
-import { SECTIONS } from '../sections.js'
-import { downscale, cutout, trimTransparent } from '../lib/image.js'
+import { defaultSeason } from '../options.js'
+import { downscale, cutout, trimTransparent, dominantColor } from '../lib/image.js'
 import ItemImage from './ItemImage.jsx'
 import TouchUp from './TouchUp.jsx'
+import SectionPicker from './SectionPicker.jsx'
+import DetailsForm from './DetailsForm.jsx'
 
 const SLOTS = [
   { id: 'front', label: 'Front' },
   { id: 'back', label: 'Back (optional)' },
 ]
 
+const EMPTY_DETAILS = { category: null, color: null, season: null, occasions: [], tags: [], notes: '' }
+
 export default function AddItem({ itemCount, onClose, onSaved }) {
   const cameraRef = useRef(null)
   const galleryRef = useRef(null)
   const targetRef = useRef('front')
+  const colorTouched = useRef(false)
 
   const [photos, setPhotos] = useState({ front: null, back: null })
   const [busy, setBusy] = useState(null) // { slot, message, pct }
@@ -21,9 +26,27 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
   const [editing, setEditing] = useState(null) // 'front' | 'back'
   const [name, setName] = useState('')
   const [section, setSection] = useState(null)
+  const [details, setDetails] = useState(EMPTY_DETAILS)
+  const [more, setMore] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const setPhoto = (slot, value) => setPhotos((p) => ({ ...p, [slot]: value }))
+
+  function updateDetails(patch) {
+    if ('color' in patch) colorTouched.current = true
+    setDetails((d) => ({ ...d, ...patch }))
+  }
+
+  // detect the colour from the front photo, unless the user already picked one
+  async function autoColor(blob) {
+    if (colorTouched.current) return
+    try {
+      const name = await dominantColor(blob)
+      if (name && !colorTouched.current) setDetails((d) => ({ ...d, color: name }))
+    } catch (err) {
+      console.error('Colour detection failed:', err)
+    }
+  }
 
   function pick(slot, kind) {
     targetRef.current = slot
@@ -67,6 +90,7 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
 
       const final = await trimTransparent(raw)
       setPhoto(slot, { original, raw, final })
+      if (slot === 'front') autoColor(final)
     } catch (err) {
       setNotice(err?.message || 'Something went wrong with this photo.')
     } finally {
@@ -80,6 +104,7 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
     try {
       const final = await trimTransparent(blob)
       setPhoto(slot, { ...current, raw: blob, final })
+      if (slot === 'front') autoColor(final)
     } finally {
       setEditing(null)
     }
@@ -88,12 +113,20 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
   async function save() {
     setSaving(true)
     try {
+      const now = Date.now()
       await db.items.add({
         name: name.trim() || `Item ${itemCount + 1}`,
         section,
+        category: details.category,
+        color: details.color,
+        season: details.season || defaultSeason(section),
+        occasions: details.occasions,
+        tags: details.tags,
+        notes: details.notes.trim(),
         front: photos.front.final,
         back: photos.back ? photos.back.final : null,
-        createdAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
       })
       // ask the browser not to clear our storage when the phone is low on space
       navigator.storage?.persist?.()
@@ -180,18 +213,19 @@ export default function AddItem({ itemCount, onClose, onSaved }) {
 
         <div className="field">
           <span>Section</span>
-          <div className="picks">
-            {SECTIONS.map((s) => (
-              <button
-                key={s.id}
-                className={'pick tone-' + s.tone + (section === s.id ? ' pick-on' : '')}
-                onClick={() => setSection(s.id)}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+          <SectionPicker value={section} onChange={setSection} />
         </div>
+
+        <button type="button" className="more-toggle glass" aria-expanded={more} onClick={() => setMore(!more)}>
+          <span>
+            More details
+            {details.color && !more ? ' · detected ' + details.color.toLowerCase() : ''}
+          </span>
+          <span className={'chev' + (more ? ' chev-open' : '')} aria-hidden="true">
+            ›
+          </span>
+        </button>
+        {more && <DetailsForm section={section} value={details} onChange={updateDetails} />}
 
         <button className="btn-primary btn-wide" disabled={!canSave} onClick={save}>
           {saving ? 'Saving' : 'Save to wardrobe'}

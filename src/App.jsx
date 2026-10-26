@@ -3,6 +3,7 @@ import { db } from './db.js'
 import TabBar from './components/TabBar.jsx'
 import AddItem from './components/AddItem.jsx'
 import ItemDetail from './components/ItemDetail.jsx'
+import EditItem from './components/EditItem.jsx'
 import ThemeToggle, { isDarkNow } from './components/ThemeToggle.jsx'
 import Wardrobe from './screens/Wardrobe.jsx'
 import Planner from './screens/Planner.jsx'
@@ -22,6 +23,7 @@ export default function App() {
   const [sectionId, setSectionId] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
   const [openId, setOpenId] = useState(null)
+  const [editId, setEditId] = useState(null)
   const [items, setItems] = useState([])
   const [theme, setTheme] = useState(loadTheme)
 
@@ -65,7 +67,13 @@ export default function App() {
     await refresh()
   }
 
+  async function handleEdited() {
+    setEditId(null)
+    await refresh()
+  }
+
   const openItem = items.find((i) => i.id === openId)
+  const editItem = items.find((i) => i.id === editId)
 
   return (
     <div className="app">
@@ -95,7 +103,10 @@ export default function App() {
         onAdd={() => setAddOpen(true)}
       />
 
-      {openItem && <ItemDetail item={openItem} onClose={() => setOpenId(null)} onDelete={handleDelete} />}
+      {openItem && (
+        <ItemDetail item={openItem} onClose={() => setOpenId(null)} onEdit={setEditId} onDelete={handleDelete} />
+      )}
+      {editItem && <EditItem item={editItem} onClose={() => setEditId(null)} onSaved={handleEdited} />}
       {addOpen && <AddItem itemCount={items.length} onClose={() => setAddOpen(false)} onSaved={handleSaved} />}
     </div>
   )

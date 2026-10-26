@@ -24,7 +24,7 @@ export default function Settings({ theme, setTheme }) {
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.3.0</span>
+          <span className="muted">Wardo 0.5.0</span>
         </div>
       </section>
     </Screen>

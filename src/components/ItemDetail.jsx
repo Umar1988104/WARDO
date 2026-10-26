@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import ItemImage from './ItemImage.jsx'
 import { sectionById } from '../sections.js'
+import { colorHex } from '../options.js'
 
-export default function ItemDetail({ item, onClose, onDelete }) {
+export default function ItemDetail({ item, onClose, onEdit, onDelete }) {
   const [side, setSide] = useState('front')
   const [confirm, setConfirm] = useState(false)
   const section = sectionById(item.section)
@@ -14,6 +15,13 @@ export default function ItemDetail({ item, onClose, onDelete }) {
     year: 'numeric',
   })
 
+  const facts = [
+    item.category,
+    item.season,
+    ...(item.occasions || []),
+  ].filter(Boolean)
+  const tags = item.tags || []
+
   return (
     <div className="overlay detail">
       <header className="ov-head">
@@ -21,7 +29,9 @@ export default function ItemDetail({ item, onClose, onDelete }) {
           Close
         </button>
         <strong>{section?.label || 'Item'}</strong>
-        <span className="ov-spacer" />
+        <button className="ov-link ov-strong" onClick={() => onEdit(item.id)}>
+          Edit
+        </button>
       </header>
 
       <div className="ov-body">
@@ -51,6 +61,39 @@ export default function ItemDetail({ item, onClose, onDelete }) {
             {section?.label} · Added {added}
           </p>
         </div>
+
+        {(item.color || facts.length > 0) && (
+          <div className="taglist">
+            {item.color && (
+              <span className="tagchip">
+                <i className="dot" style={{ background: colorHex(item.color) }} />
+                {item.color}
+              </span>
+            )}
+            {facts.map((f) => (
+              <span className="tagchip" key={f}>
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {tags.length > 0 && (
+          <div className="taglist">
+            {tags.map((t) => (
+              <span className="tagchip tagchip-note" key={t}>
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {item.notes && (
+          <div className="note glass">
+            <span className="muted">Notes</span>
+            <p>{item.notes}</p>
+          </div>
+        )}
 
         <button
           className={'btn-danger' + (confirm ? ' btn-danger-on' : '')}

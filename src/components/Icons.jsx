@@ -83,3 +83,16 @@ export const ChevronLeftIcon = () => (
     <path d="M15 5l-7 7 7 7" />
   </svg>
 )
+
+export const SearchIcon = () => (
+  <svg {...base} width={20} height={20}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-4-4" />
+  </svg>
+)
+
+export const FilterIcon = () => (
+  <svg {...base} width={22} height={22}>
+    <path d="M4 7h16M7 12h10M10 17h4" />
+  </svg>
+)

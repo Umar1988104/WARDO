@@ -91,3 +91,75 @@ export async function trimTransparent(blob, pad = 16) {
   out.getContext('2d').drawImage(canvas, minX, minY, w, h, 0, 0, w, h)
   return canvasToBlob(out)
 }
+
+// ---------- Colour detection ----------
+
+// Maps any RGB colour to the closest friendly name from our palette.
+export function nameColor(r, g, b) {
+  r /= 255
+  g /= 255
+  b /= 255
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  const d = max - min
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1))
+  let h = 0
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6
+    else if (max === g) h = (b - r) / d + 2
+    else h = (r - g) / d + 4
+    h *= 60
+    if (h < 0) h += 360
+  }
+
+  if (l < 0.12) return 'Black'
+  if (s < 0.14) {
+    if (l < 0.22) return 'Black'
+    if (l > 0.85) return 'White'
+    return 'Grey'
+  }
+  if (h < 15 || h >= 345) return l > 0.7 ? 'Pink' : 'Red'
+  if (h < 40) {
+    if (l < 0.4) return 'Brown'
+    if (s < 0.45 && l > 0.65) return 'Beige'
+    return 'Orange'
+  }
+  if (h < 65) {
+    if (l < 0.4) return 'Olive'
+    if (s < 0.4 && l > 0.65) return 'Beige'
+    return 'Yellow'
+  }
+  if (h < 80) return l < 0.45 ? 'Olive' : 'Green'
+  if (h < 165) return 'Green'
+  if (h < 195) return 'Teal'
+  if (h < 255) return l < 0.3 ? 'Navy' : 'Blue'
+  if (h < 290) return 'Purple'
+  return l > 0.55 ? 'Pink' : 'Purple'
+}
+
+// Finds the main colour of a cutout (ignores transparent pixels).
+export async function dominantColor(blob) {
+  const bmp = await createImageBitmap(blob)
+  const scale = Math.min(1, 80 / Math.max(bmp.width, bmp.height))
+  const w = Math.max(1, Math.round(bmp.width * scale))
+  const h = Math.max(1, Math.round(bmp.height * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.drawImage(bmp, 0, 0, w, h)
+  const { data } = ctx.getImageData(0, 0, w, h)
+
+  const counts = {}
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 200) continue
+    const name = nameColor(data[i], data[i + 1], data[i + 2])
+    counts[name] = (counts[name] || 0) + 1
+  }
+  let best = null
+  for (const [name, n] of Object.entries(counts)) {
+    if (!best || n > counts[best]) best = name
+  }
+  return best
+}

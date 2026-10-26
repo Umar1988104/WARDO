@@ -1,7 +1,10 @@
+import { useMemo, useState } from 'react'
 import Screen from '../components/Screen.jsx'
 import ItemImage from '../components/ItemImage.jsx'
-import { CalendarIcon } from '../components/Icons.jsx'
+import FilterSheet from '../components/FilterSheet.jsx'
+import { CalendarIcon, SearchIcon, FilterIcon } from '../components/Icons.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
+import { EMPTY_FILTERS, applyFilters, countActive, sortItems } from '../lib/filter.js'
 
 function ItemCard({ item, onOpen, small }) {
   const tone = sectionById(item.section)?.tone || 'blue'
@@ -16,6 +19,25 @@ function ItemCard({ item, onOpen, small }) {
 }
 
 export default function Wardrobe({ items, sectionId, setSectionId, onAdd, onPlan, onOpenItem }) {
+  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
+  const [sort, setSort] = useState('new')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+
+  const activeCount = countActive(filters)
+  const resultsMode = showAll || query.trim() !== '' || activeCount > 0
+
+  const results = useMemo(() => sortItems(applyFilters(items, query, filters), sort), [items, query, filters, sort])
+  const categories = useMemo(() => [...new Set(items.map((i) => i.category).filter(Boolean))].sort(), [items])
+
+  function leaveResults() {
+    setShowAll(false)
+    setQuery('')
+    setFilters(EMPTY_FILTERS)
+    setSort('new')
+  }
+
   const section = sectionById(sectionId)
 
   if (section) {
@@ -47,52 +69,122 @@ export default function Wardrobe({ items, sectionId, setSectionId, onAdd, onPlan
   const recent = items.slice(0, 10)
 
   return (
-    <Screen title="Wardrobe">
-      <section className="hero">
-        <div className="hero-text">
-          <h2>What are you wearing tomorrow?</h2>
-          <p>Add a few clothes, then plan your outfit in one tap.</p>
-        </div>
-        <button className="hero-btn" onClick={onPlan}>
-          <CalendarIcon />
-          Plan outfit
+    <Screen title={resultsMode ? 'All items' : 'Wardrobe'} back={resultsMode ? { label: 'Wardrobe', onClick: leaveResults } : undefined}>
+      <div className="searchrow">
+        <label className="search glass">
+          <SearchIcon />
+          <input
+            type="search"
+            value={query}
+            placeholder="Search clothes, colors, notes"
+            autoComplete="off"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <button className="filter-btn glass" onClick={() => setFilterOpen(true)} aria-label="Filters and sorting">
+          <FilterIcon />
+          {activeCount > 0 && <b>{activeCount}</b>}
         </button>
-      </section>
-
-      <h3 className="section-title">Sections</h3>
-      <div className="tiles">
-        {SECTIONS.map((s) => {
-          const count = items.filter((i) => i.section === s.id).length
-          return (
-            <button key={s.id} className={'tile glass tone-' + s.tone} onClick={() => setSectionId(s.id)}>
-              <span className="chip">
-                <s.Icon />
-              </span>
-              <strong>{s.label}</strong>
-              <span className="muted tile-hint">{s.hint}</span>
-              <span className="tile-count">
-                {count} {count === 1 ? 'item' : 'items'}
-              </span>
-            </button>
-          )
-        })}
       </div>
 
-      <h3 className="section-title">Recently added</h3>
-      {recent.length === 0 ? (
-        <div className="empty empty-slim glass">
-          <p className="muted">Nothing here yet. Tap the + button to add your first piece.</p>
-          <button className="btn-primary" onClick={onAdd}>
-            Add first item
-          </button>
-        </div>
+      {resultsMode ? (
+        results.length === 0 ? (
+          <div className="empty glass">
+            <h2>{items.length === 0 ? 'Your wardrobe is empty' : 'No matches'}</h2>
+            <p className="muted">
+              {items.length === 0
+                ? 'Add your first piece to start building your wardrobe.'
+                : 'Try a different word, or clear some filters.'}
+            </p>
+            {items.length === 0 ? (
+              <button className="btn-primary" onClick={onAdd}>
+                Add first item
+              </button>
+            ) : (
+              <button className="btn-primary" onClick={leaveResults}>
+                Clear search and filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <p className="muted results-count">
+              {results.length} {results.length === 1 ? 'item' : 'items'}
+            </p>
+            <div className="item-grid">
+              {results.map((item) => (
+                <ItemCard key={item.id} item={item} onOpen={onOpenItem} />
+              ))}
+            </div>
+          </>
+        )
       ) : (
-        <div className="recent-row">
-          {recent.map((item) => (
-            <ItemCard key={item.id} item={item} onOpen={onOpenItem} small />
-          ))}
-        </div>
+        <>
+          <section className="hero">
+            <div className="hero-text">
+              <h2>What are you wearing tomorrow?</h2>
+              <p>Add a few clothes, then plan your outfit in one tap.</p>
+            </div>
+            <button className="hero-btn" onClick={onPlan}>
+              <CalendarIcon />
+              Plan outfit
+            </button>
+          </section>
+
+          <h3 className="section-title">Sections</h3>
+          <div className="tiles">
+            {SECTIONS.map((s) => {
+              const count = items.filter((i) => i.section === s.id).length
+              return (
+                <button key={s.id} className={'tile glass tone-' + s.tone} onClick={() => setSectionId(s.id)}>
+                  <span className="chip">
+                    <s.Icon />
+                  </span>
+                  <strong>{s.label}</strong>
+                  <span className="muted tile-hint">{s.hint}</span>
+                  <span className="tile-count">
+                    {count} {count === 1 ? 'item' : 'items'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="title-row">
+            <h3 className="section-title">Recently added</h3>
+            {items.length > 0 && (
+              <button className="link-btn" onClick={() => setShowAll(true)}>
+                See all {items.length}
+              </button>
+            )}
+          </div>
+          {recent.length === 0 ? (
+            <div className="empty empty-slim glass">
+              <p className="muted">Nothing here yet. Tap the + button to add your first piece.</p>
+              <button className="btn-primary" onClick={onAdd}>
+                Add first item
+              </button>
+            </div>
+          ) : (
+            <div className="recent-row">
+              {recent.map((item) => (
+                <ItemCard key={item.id} item={item} onOpen={onOpenItem} small />
+              ))}
+            </div>
+          )}
+        </>
       )}
+
+      <FilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        setFilters={setFilters}
+        sort={sort}
+        setSort={setSort}
+        categories={categories}
+        count={results.length}
+      />
     </Screen>
   )
 }
