@@ -2,8 +2,10 @@ import Chips from './Chips.jsx'
 import { SECTIONS } from '../sections.js'
 import { COLORS, SEASONS, OCCASIONS, TAGS, SORTS } from '../options.js'
 import { EMPTY_FILTERS } from '../lib/filter.js'
+import { useBackClose } from '../lib/backstack.js'
 
 export default function FilterSheet({ open, onClose, filters, setFilters, sort, setSort, categories, count }) {
+  useBackClose(onClose, open)
   const set = (key) => (value) => setFilters((f) => ({ ...f, [key]: value }))
 
   return (

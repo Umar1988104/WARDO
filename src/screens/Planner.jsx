@@ -53,7 +53,24 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
   }
 
   return (
-    <Screen title="Planner">
+    <Screen
+      title="Planner"
+      overlays={
+          picker && (
+            <OutfitPicker
+              items={items}
+              title={tag || 'Outfit'}
+              initialIds={outfit ? outfit.itemIds.filter((id) => byId[id]) : []}
+              initialNote={outfit?.note || ''}
+              onClose={() => setPicker(false)}
+              onSave={async (ids, note) => {
+                await actions.saveOutfit(selected, ids, note)
+                setPicker(false)
+              }}
+            />
+          )
+      }
+    >
       <section className="cal glass">
         <div className="cal-head">
           <button className="cal-nav" onClick={() => shiftMonth(-1)} aria-label="Previous month">
@@ -160,20 +177,6 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
           </>
         )}
       </section>
-
-      {picker && (
-        <OutfitPicker
-          items={items}
-          title={tag || 'Outfit'}
-          initialIds={outfit ? outfit.itemIds.filter((id) => byId[id]) : []}
-          initialNote={outfit?.note || ''}
-          onClose={() => setPicker(false)}
-          onSave={async (ids, note) => {
-            await actions.saveOutfit(selected, ids, note)
-            setPicker(false)
-          }}
-        />
-      )}
     </Screen>
   )
 }

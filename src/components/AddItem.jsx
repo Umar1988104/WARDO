@@ -10,6 +10,7 @@ import SectionPicker from './SectionPicker.jsx'
 import DetailsForm from './DetailsForm.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
+import { useBackClose } from '../lib/backstack.js'
 
 const SLOTS = [
   { id: 'front', label: 'Front' },
@@ -32,6 +33,7 @@ function loadCutMode() {
 }
 
 export default function AddItem({ itemCount, folders, actions, defaultSection = null, defaultFolderId = null, onClose, onSaved, onBatch }) {
+  useBackClose(onClose)
   const cameraRef = useRef(null)
   const galleryRef = useRef(null)
   const targetRef = useRef('front')

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { canvasToBlob } from '../lib/image.js'
+import { useBackClose } from '../lib/backstack.js'
 
 const ZOOMS = [1, 2, 3]
 const MAX_HISTORY = 8
 
 // Touch-up editor: erase leftover background, or restore parts that were cut off.
 export default function TouchUp({ originalBlob, cutoutBlob, onDone, onCancel }) {
+  useBackClose(onCancel)
   const stageRef = useRef(null)
   const canvasRef = useRef(null)
   const startRef = useRef(null) // ImageBitmap of the cutout we began with

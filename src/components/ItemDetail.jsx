@@ -3,8 +3,10 @@ import ItemImage from './ItemImage.jsx'
 import { sectionById } from '../sections.js'
 import { colorHex } from '../options.js'
 import { agoText } from '../lib/dates.js'
+import { useBackClose } from '../lib/backstack.js'
 
 export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onClose, onEdit, onDelete }) {
+  useBackClose(onClose)
   const [side, setSide] = useState('front')
   const [confirm, setConfirm] = useState(false)
   const section = sectionById(item.section)

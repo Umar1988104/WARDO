@@ -1,7 +1,9 @@
 import { FolderIcon } from './Icons.jsx'
+import { useBackClose } from '../lib/backstack.js'
 
 // Pick where the selected pieces should go.
 export default function MoveSheet({ count, folders, currentFolderId, onPick, onNew, onClose }) {
+  useBackClose(onClose)
   return (
     <>
       <div className="scrim scrim-on scrim-over" onClick={onClose} />

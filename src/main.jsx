@@ -1,9 +1,11 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
+import './lib/prefs.js' // applies saved look and speed settings before the first draw
 import App from './App.jsx'
 import './styles.css'
 import './closetly.css'
+import './perf.css'
 
 // Service worker: keeps the app (and the cutout model once downloaded) available offline.
 registerSW({ immediate: true })

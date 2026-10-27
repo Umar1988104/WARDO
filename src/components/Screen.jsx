@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { ChevronLeftIcon } from './Icons.jsx'
 
 // Scrolling page with an iOS-style large title that collapses into a glass nav bar.
-export default function Screen({ title, back, children }) {
+// `overlays` (sheets, pickers) are drawn outside the animated body, so the page's entrance
+// animation can never force a closed sheet open.
+export default function Screen({ title, back, children, overlays = null }) {
   const [scrolled, setScrolled] = useState(false)
 
   return (
@@ -20,6 +22,7 @@ export default function Screen({ title, back, children }) {
       </div>
       <h1 className="large-title">{title}</h1>
       <div className="screen-body">{children}</div>
+      {overlays}
     </main>
   )
 }

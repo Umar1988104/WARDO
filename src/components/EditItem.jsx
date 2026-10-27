@@ -5,8 +5,10 @@ import SectionPicker from './SectionPicker.jsx'
 import DetailsForm from './DetailsForm.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
+import { useBackClose } from '../lib/backstack.js'
 
 export default function EditItem({ item, folders, actions, onClose, onSaved }) {
+  useBackClose(onClose)
   const [name, setName] = useState(item.name || '')
   const [section, setSection] = useState(item.section)
   const [details, setDetails] = useState({

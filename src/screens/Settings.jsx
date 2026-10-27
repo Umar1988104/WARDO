@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Screen from '../components/Screen.jsx'
-import Segmented from '../components/Segmented.jsx'
+import LookAndFeel from '../components/LookAndFeel.jsx'
 import Switch from '../components/Switch.jsx'
 import { PinFlow } from '../components/PinPad.jsx'
 import { setLockApp, setLockInner } from '../lib/lock.js'
@@ -15,12 +15,6 @@ import {
   restoreReplace,
   restoreMerge,
 } from '../lib/backup.js'
-
-const THEMES = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-]
 
 const mb = (bytes) => (bytes / 1048576 >= 10 ? Math.round(bytes / 1048576) : Math.round((bytes / 1048576) * 10) / 10)
 const fmtDate = (t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
@@ -160,13 +154,22 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
   const canPersist = typeof navigator !== 'undefined' && !!navigator.storage?.persist
 
   return (
-    <Screen title="Profile">
-      <section className="group glass">
-        <div className="row">
-          <span>Appearance</span>
-        </div>
-        <Segmented options={THEMES} value={theme} onChange={setTheme} />
-      </section>
+    <Screen
+      title="Profile"
+      overlays={
+          flow && (
+            <PinFlow
+              mode={flow}
+              onClose={() => setFlow(null)}
+              onDone={() => {
+                setFlow(null)
+                onPrivacyChange()
+              }}
+            />
+          )
+      }
+    >
+      <LookAndFeel theme={theme} setTheme={setTheme} />
 
       <section className="group glass">
         <div className="row">
@@ -303,19 +306,9 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.10.0</span>
+          <span className="muted">Wardo 0.10.1</span>
         </div>
       </section>
-      {flow && (
-        <PinFlow
-          mode={flow}
-          onClose={() => setFlow(null)}
-          onDone={() => {
-            setFlow(null)
-            onPrivacyChange()
-          }}
-        />
-      )}
     </Screen>
   )
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useBackClose } from '../lib/backstack.js'
 
 // Small sheet to name a new folder, or rename / delete an existing one.
 // Mounted only while it is needed, so the name box always starts fresh.
 export default function FolderSheet({ title, initial = '', cta = 'Save', takenNames = [], onClose, onSave, onDelete }) {
+  useBackClose(onClose)
   const [name, setName] = useState(initial)
   const [error, setError] = useState('')
   const [confirm, setConfirm] = useState(false)

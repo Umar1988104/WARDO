@@ -1,0 +1,200 @@
+/* =========================================================
+   Wardo v0.10.1: speed, theme packs and settings.
+   Loaded last. Driven by data-* attributes that lib/prefs.js puts on <html>:
+   data-motion = full | reduced | off      data-blur = full | light | off
+   data-bg = on | off (moving background)   data-cols = 2 | 3
+   ========================================================= */
+
+/* ---- Bug fix: sheets and pickers must never be animated by their page ----
+   A sheet that is a child of the page body used to get the page's fade-in animation,
+   which forced it open and made it impossible to close. */
+.screen-body > .scrim,
+.screen-body > .sheet,
+.screen-body > .overlay,
+.screen-body > .selbar {
+  animation: none;
+}
+
+/* ---- Theme pack colours (set from Settings) ---- */
+.hero {
+  background: var(--hero-grad, linear-gradient(120deg, #123f3a, #23796d, #4fb9a2, #23796d));
+  background-size: 260% 260%;
+}
+.hero-btn,
+.welcome .welcome-go {
+  color: var(--accent-deep, #17564e);
+}
+
+/* ---- Layout: 3 columns ---- */
+:root[data-cols='3'] .item-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+:root[data-cols='3'] .item-grid .item-name {
+  font-size: 12px;
+}
+
+/* ---- Glass blur ---- */
+:root[data-blur='light'] .glass,
+:root[data-blur='light'] .scrim {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+:root[data-blur='off'] {
+  --glass: var(--glass-solid);
+}
+:root[data-blur='off'] *,
+:root[data-blur='off'] *::before,
+:root[data-blur='off'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* ---- Moving background off: static colour clouds, no big blur filter ---- */
+:root[data-bg='off'] .backdrop-art::before,
+:root[data-bg='off'] .backdrop-art::after,
+:root[data-bg='off'] .welcome::before,
+:root[data-bg='off'] .welcome::after,
+:root[data-bg='off'] .pinpad::before,
+:root[data-bg='off'] .pinpad::after {
+  animation: none !important;
+  filter: none;
+  will-change: auto;
+}
+
+/* ---- Animations: reduced = no endless or decorative motion, quick sheets ---- */
+:root[data-motion='reduced'] .backdrop-art::before,
+:root[data-motion='reduced'] .backdrop-art::after,
+:root[data-motion='reduced'] .welcome::before,
+:root[data-motion='reduced'] .welcome::after,
+:root[data-motion='reduced'] .pinpad::before,
+:root[data-motion='reduced'] .pinpad::after,
+:root[data-motion='reduced'] .tab-add::after,
+:root[data-motion='reduced'] .hero,
+:root[data-motion='reduced'] .hero::before,
+:root[data-motion='reduced'] .hero .othumb,
+:root[data-motion='reduced'] .welcome .welcome-hanger,
+:root[data-motion='reduced'] .tab-active svg,
+:root[data-motion='reduced'] .home > *,
+:root[data-motion='reduced'] .screen-body > *,
+:root[data-motion='reduced'] .item-grid > .item-card,
+:root[data-motion='reduced'] .recent-row > .item-card {
+  animation: none !important;
+}
+:root[data-motion='reduced'] .backdrop-art::before,
+:root[data-motion='reduced'] .backdrop-art::after,
+:root[data-motion='reduced'] .welcome::before,
+:root[data-motion='reduced'] .welcome::after,
+:root[data-motion='reduced'] .pinpad::before,
+:root[data-motion='reduced'] .pinpad::after {
+  filter: none;
+  will-change: auto;
+}
+:root[data-motion='reduced'] .tab-add::after,
+:root[data-motion='reduced'] .hero::before {
+  display: none;
+}
+:root[data-motion='reduced'] .sheet {
+  transition-duration: 0.22s;
+}
+:root[data-motion='reduced'] .scrim {
+  transition-duration: 0.15s;
+}
+:root[data-motion='reduced'] .overlay,
+:root[data-motion='reduced'] .sheet-pop {
+  animation-duration: 0.2s !important;
+}
+
+/* ---- Animations: off = everything happens instantly ---- */
+:root[data-motion='off'] *,
+:root[data-motion='off'] *::before,
+:root[data-motion='off'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+:root[data-motion='off'] .tab-add::after,
+:root[data-motion='off'] .hero::before {
+  display: none;
+}
+/* these two are feedback, not decoration, so they keep working */
+:root[data-motion='off'] .spinner {
+  animation: spin 0.8s linear infinite !important;
+}
+:root[data-motion='off'] .pin-dots.shake {
+  animation: shake 0.45s ease !important;
+}
+
+/* ---- Settings: name card and colour swatches ---- */
+.me {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.me-avatar {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent-grad);
+}
+.me-fields {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.me-fields input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-solid);
+  color: var(--text);
+  font: inherit;
+}
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 2px 10px;
+}
+.swatch {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+.swatch-dot {
+  border-radius: 50%;
+}
+.swatch-on {
+  border-color: var(--bg);
+  box-shadow: 0 0 0 3px var(--accent);
+}
+.swatch-pick {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: conic-gradient(#e0585c, #e8b64c, #6cc070, #4aa8d8, #8c6ad8, #e0585c);
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.swatch-pick input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}

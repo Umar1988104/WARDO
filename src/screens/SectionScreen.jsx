@@ -4,6 +4,7 @@ import ItemGrid from '../components/ItemGrid.jsx'
 import FolderSheet from '../components/FolderSheet.jsx'
 import MoveSheet from '../components/MoveSheet.jsx'
 import { FolderIcon } from '../components/Icons.jsx'
+import { useBackClose } from '../lib/backstack.js'
 
 // One section (Winter, Summer...) with its folders. Open a folder to see only its clothes.
 // "Select" lets you pick several pieces and move them into a folder in one go.
@@ -46,6 +47,9 @@ export default function SectionScreen({ section, folders, folderId, setFolderId,
     })
   }, [])
 
+  // Back leaves select mode before it leaves the section
+  useBackClose(endSelect, selecting)
+
   function goBack() {
     endSelect()
     if (folder) setFolderId(null)
@@ -68,7 +72,73 @@ export default function SectionScreen({ section, folders, folderId, setFolderId,
   const back = { label: folder ? section.label : 'Wardrobe', onClick: goBack }
 
   return (
-    <Screen title={title} back={back}>
+    <Screen
+      title={title}
+      back={back}
+      overlays={
+        <>
+          {selecting && (
+            <div className="selbar glass">
+              <button className="btn-primary" disabled={picked.size === 0} onClick={() => setSheet('move')}>
+                Move to folder
+              </button>
+            </div>
+          )}
+
+          {sheet === 'new' && (
+            <FolderSheet
+              title="New folder"
+              cta="Create folder"
+              takenNames={sectionFolders.map((f) => f.name)}
+              onClose={() => setSheet(null)}
+              onSave={async (name) => {
+                await actions.createFolder(section.id, name)
+                setSheet(null)
+              }}
+            />
+          )}
+
+          {sheet === 'rename' && folder && (
+            <FolderSheet
+              title="Rename folder"
+              initial={folder.name}
+              takenNames={sectionFolders.map((f) => f.name)}
+              onClose={() => setSheet(null)}
+              onSave={async (name) => {
+                await actions.renameFolder(folder.id, name)
+                setSheet(null)
+              }}
+              onDelete={async () => {
+                setSheet(null)
+                setFolderId(null)
+                await actions.deleteFolder(folder.id)
+              }}
+            />
+          )}
+
+          {sheet === 'move' && (
+            <MoveSheet
+              count={picked.size}
+              folders={sectionFolders}
+              currentFolderId={folder ? folder.id : null}
+              onPick={move}
+              onNew={() => setSheet('new-move')}
+              onClose={() => setSheet(null)}
+            />
+          )}
+
+          {sheet === 'new-move' && (
+            <FolderSheet
+              title="New folder"
+              cta="Create and move"
+              takenNames={sectionFolders.map((f) => f.name)}
+              onClose={() => setSheet('move')}
+              onSave={moveToNew}
+            />
+          )}
+        </>
+      }
+    >
       {!selecting && (
         <div className="actions-row">
           {!folder && (
@@ -153,66 +223,6 @@ export default function SectionScreen({ section, folders, folderId, setFolderId,
         ) : null
       ) : (
         <ItemGrid key={folder ? folder.id : 'root'} items={shown} onOpen={selecting ? toggle : onOpenItem} selecting={selecting} picked={picked} />
-      )}
-
-      {selecting && (
-        <div className="selbar glass">
-          <button className="btn-primary" disabled={picked.size === 0} onClick={() => setSheet('move')}>
-            Move to folder
-          </button>
-        </div>
-      )}
-
-      {sheet === 'new' && (
-        <FolderSheet
-          title="New folder"
-          cta="Create folder"
-          takenNames={sectionFolders.map((f) => f.name)}
-          onClose={() => setSheet(null)}
-          onSave={async (name) => {
-            await actions.createFolder(section.id, name)
-            setSheet(null)
-          }}
-        />
-      )}
-
-      {sheet === 'rename' && folder && (
-        <FolderSheet
-          title="Rename folder"
-          initial={folder.name}
-          takenNames={sectionFolders.map((f) => f.name)}
-          onClose={() => setSheet(null)}
-          onSave={async (name) => {
-            await actions.renameFolder(folder.id, name)
-            setSheet(null)
-          }}
-          onDelete={async () => {
-            setSheet(null)
-            setFolderId(null)
-            await actions.deleteFolder(folder.id)
-          }}
-        />
-      )}
-
-      {sheet === 'move' && (
-        <MoveSheet
-          count={picked.size}
-          folders={sectionFolders}
-          currentFolderId={folder ? folder.id : null}
-          onPick={move}
-          onNew={() => setSheet('new-move')}
-          onClose={() => setSheet(null)}
-        />
-      )}
-
-      {sheet === 'new-move' && (
-        <FolderSheet
-          title="New folder"
-          cta="Create and move"
-          takenNames={sectionFolders.map((f) => f.name)}
-          onClose={() => setSheet('move')}
-          onSave={moveToNew}
-        />
       )}
     </Screen>
   )

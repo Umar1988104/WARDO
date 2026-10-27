@@ -5,10 +5,12 @@ import { downscale, cutout, trimTransparent, dominantColor, makeThumb, compactIm
 import SectionPicker from './SectionPicker.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
+import { useBackClose } from '../lib/backstack.js'
 
 // Add many pieces in a row. Pick a section once, then take or choose photos. Each one is cut out and
 // saved in the background, so nothing is lost. Names and details are filled in afterwards.
 export default function BatchAdd({ itemCount, folders, actions, defaultSection = null, defaultFolderId = null, onClose, onFinished }) {
+  useBackClose(onClose)
   const cameraRef = useRef(null)
   const galleryRef = useRef(null)
   const pumping = useRef(false)

@@ -9,6 +9,7 @@ import {
   zoomAt,
   backAtStart,
 } from '../lib/cutmath.js'
+import { useBackClose } from '../lib/backstack.js'
 
 const CLOSE_PX = 22 // screen px: finishing this close to the first point closes the outline
 const SNAP_PX = 28 // screen px: starting this close to the end of the line continues that line
@@ -27,6 +28,7 @@ function tracePath(ctx, pts) {
 //  - Two fingers: pinch to zoom, drag to move.
 //  - Finish by coming back to the green dot (or tap Close shape), then tap Cut out.
 export default function ManualCut({ originalBlob, onDone, onCancel }) {
+  useBackClose(onCancel)
   const stageRef = useRef(null)
   const wrapRef = useRef(null)
   const photoRef = useRef(null)

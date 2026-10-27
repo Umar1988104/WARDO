@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import TodayCard from '../components/TodayCard.jsx'
 import BackupNudge from '../components/BackupNudge.jsx'
 import { SearchIcon, PlusIcon, CalendarIcon, InsightsIcon, SettingsIcon, LockIcon } from '../components/Icons.jsx'
+import { usePrefs } from '../lib/prefs.js'
 import { SECTIONS } from '../sections.js'
 import { daysSince, keyOf, todayKey } from '../lib/dates.js'
 
@@ -9,6 +10,11 @@ import { daysSince, keyOf, todayKey } from '../lib/dates.js'
 function CountUp({ to }) {
   const [v, setV] = useState(0)
   useEffect(() => {
+    // no counting animation when animations are reduced or off
+    if (document.documentElement.dataset.motion !== 'full') {
+      setV(to)
+      return undefined
+    }
     let raf
     const t0 = performance.now()
     const tick = (t) => {
@@ -30,6 +36,8 @@ function greeting() {
 }
 
 export default function Home({ items, innerHidden = false, onReview, wearInfo, outfitMap, actions, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
+  const prefs = usePrefs()
+  const who = prefs.name.trim()
   const stats = useMemo(() => {
     const month = todayKey().slice(0, 7)
     let worn = 0
@@ -61,8 +69,8 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, o
   return (
     <main className="screen home">
       <div className="home-hello">
-        <h1>{greeting()},</h1>
-        <p className="muted">Your style, your way</p>
+        <h1>{who ? `${greeting()}, ${who}` : greeting()}</h1>
+        <p className="muted">{prefs.title.trim() || 'Your style, your way'}</p>
       </div>
 
       <button className="home-search glass" onClick={onSearch}>

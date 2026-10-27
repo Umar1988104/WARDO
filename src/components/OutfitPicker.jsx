@@ -2,9 +2,11 @@ import { useState } from 'react'
 import ItemImage from './ItemImage.jsx'
 import Segmented from './Segmented.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
+import { useBackClose } from '../lib/backstack.js'
 
 // Full-screen picker: tap pieces to put them in an outfit.
 export default function OutfitPicker({ items, initialIds = [], initialNote = '', title, onClose, onSave }) {
+  useBackClose(onClose)
   const [ids, setIds] = useState(initialIds)
   const [note, setNote] = useState(initialNote)
   const [sec, setSec] = useState('all')

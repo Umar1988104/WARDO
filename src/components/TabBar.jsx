@@ -1,3 +1,4 @@
+import { buzz } from '../lib/prefs.js'
 import { HomeIcon, HangerIcon, CalendarIcon, PlusIcon, UserIcon } from './Icons.jsx'
 
 const TABS = [
@@ -13,14 +14,20 @@ export default function TabBar({ tab, setTab, onAdd }) {
     <nav className="tabbar glass" aria-label="Main">
       {TABS.map(({ id, label, Icon }) =>
         id === 'add' ? (
-          <button key={id} className="tab-add" onClick={onAdd} aria-label="Add clothing item">
+          <button key={id} className="tab-add" onClick={() => {
+              buzz()
+              onAdd()
+            }} aria-label="Add clothing item">
             <Icon />
           </button>
         ) : (
           <button
             key={id}
             className={'tab' + ((tab === id || (tab === 'insights' && id === 'home')) ? ' tab-active' : '')}
-            onClick={() => setTab(id)}
+            onClick={() => {
+              buzz()
+              setTab(id)
+            }}
             aria-current={tab === id ? 'page' : undefined}
           >
             <Icon />

@@ -6,6 +6,7 @@ import SectionScreen from './SectionScreen.jsx'
 import FilterSheet from '../components/FilterSheet.jsx'
 import { SearchIcon, FilterIcon, LockIcon } from '../components/Icons.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
+import { useBackClose } from '../lib/backstack.js'
 import { EMPTY_FILTERS, applyFilters, countActive, sortItems } from '../lib/filter.js'
 
 export default function Wardrobe({ items, innerHidden = false, folders, wearInfo, outfitMap, actions, sectionId, setSectionId, folderId, setFolderId, onAdd, onPlan, onOpenSettings, onOpenItem }) {
@@ -34,6 +35,8 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
   }
 
   const section = sectionById(sectionId)
+  // Back leaves the search results before it leaves the Wardrobe
+  useBackClose(leaveResults, resultsMode && !section)
 
   if (section) {
     return (
@@ -54,7 +57,22 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
   const recent = items.slice(0, 10)
 
   return (
-    <Screen title={resultsMode ? 'All items' : 'My Wardrobe'} back={resultsMode ? { label: 'Wardrobe', onClick: leaveResults } : undefined}>
+    <Screen
+      title={resultsMode ? 'All items' : 'My Wardrobe'}
+      back={resultsMode ? { label: 'Wardrobe', onClick: leaveResults } : undefined}
+      overlays={
+        <FilterSheet
+          open={filterOpen}
+          onClose={() => setFilterOpen(false)}
+          filters={filters}
+          setFilters={setFilters}
+          sort={sort}
+          setSort={setSort}
+          categories={categories}
+          count={results.length}
+        />
+      }
+    >
       <div className="searchrow">
         <label className="search glass">
           <SearchIcon />
@@ -153,16 +171,6 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
         </>
       )}
 
-      <FilterSheet
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        filters={filters}
-        setFilters={setFilters}
-        sort={sort}
-        setSort={setSort}
-        categories={categories}
-        count={results.length}
-      />
     </Screen>
   )
 }

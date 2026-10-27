@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { LockIcon } from './Icons.jsx'
 import { tryPin, setPin, removePin } from '../lib/lock.js'
+import { useBackClose } from '../lib/backstack.js'
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del']
 
 // Full-screen number pad. onSubmit(pin) returns true (accepted), or text to show as the error.
 export default function PinPad({ title, subtitle, onSubmit, onCancel, footer, length = 4 }) {
+  useBackClose(onCancel, !!onCancel)
   const [digits, setDigits] = useState('')
   const [msg, setMsg] = useState('')
   const [shake, setShake] = useState(false)

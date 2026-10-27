@@ -3,6 +3,7 @@ import { db } from '../db.js'
 import { defaultSeason } from '../options.js'
 import ItemImage from './ItemImage.jsx'
 import DetailsForm from './DetailsForm.jsx'
+import { useBackClose } from '../lib/backstack.js'
 
 const detailsOf = (item) => ({
   category: item.category || null,
@@ -15,6 +16,7 @@ const detailsOf = (item) => ({
 
 // Goes through new pieces one by one: name, category, colour, tags.
 export default function BatchReview({ ids, items, actions, onClose }) {
+  useBackClose(onClose)
   const [list] = useState(() => ids.map((id) => items.find((i) => i.id === id)).filter(Boolean))
   const [index, setIndex] = useState(0)
   const item = list[index]

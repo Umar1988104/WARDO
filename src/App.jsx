@@ -6,6 +6,8 @@ import BatchAdd from './components/BatchAdd.jsx'
 import BatchReview from './components/BatchReview.jsx'
 import useData from './useData.js'
 import { todayKey } from './lib/dates.js'
+import { initBackStack } from './lib/backstack.js'
+import { applyPrefs, buzz, getPrefs } from './lib/prefs.js'
 import TabBar from './components/TabBar.jsx'
 import AddItem from './components/AddItem.jsx'
 import ItemDetail from './components/ItemDetail.jsx'
@@ -27,7 +29,10 @@ function loadTheme() {
 }
 
 export default function App() {
-  const [tab, setTab] = useState('home')
+  const [tab, setTab] = useState(() => {
+    const t = getPrefs().startTab
+    return t === 'wardrobe' || t === 'planner' ? t : 'home'
+  })
   const [sectionId, setSectionId] = useState(null)
   const [folderId, setFolderId] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
@@ -115,7 +120,30 @@ export default function App() {
       m.removeAttribute('media')
       m.setAttribute('content', colour)
     })
+    applyPrefs() // theme packs and accent colours have a light and a dark version
   }, [theme])
+
+  // Android Back button: close the top layer, then step back through screens, and leave the app only from Home.
+  const backRef = useRef(() => false)
+  backRef.current = () => {
+    if (appLocked) return false
+    if (folderId != null) {
+      setFolderId(null)
+      return true
+    }
+    if (sectionId) {
+      setSectionId(null)
+      return true
+    }
+    if (tab !== 'home') {
+      setTab('home')
+      return true
+    }
+    return false
+  }
+  useEffect(() => {
+    initBackStack(() => backRef.current())
+  }, [])
 
   async function handleSaved(section, folder = null) {
     await actions.refresh()
@@ -249,7 +277,10 @@ export default function App() {
           item={openItem}
           wear={wearInfo[openItem.id]}
           wornToday={!!wearInfo[openItem.id]?.dates.has(todayKey())}
-          onToggleWorn={actions.toggleWorn}
+          onToggleWorn={(...args) => {
+            buzz(12)
+            return actions.toggleWorn(...args)
+          }}
           onClose={() => setOpenId(null)}
           onEdit={setEditId}
           onDelete={handleDelete}
