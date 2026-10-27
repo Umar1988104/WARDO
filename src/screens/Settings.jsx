@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Screen from '../components/Screen.jsx'
 import Segmented from '../components/Segmented.jsx'
+import Switch from '../components/Switch.jsx'
+import { PinFlow } from '../components/PinPad.jsx'
+import { setLockApp, setLockInner } from '../lib/lock.js'
 import {
   buildBackup,
   backupFileName,
@@ -22,7 +25,8 @@ const THEMES = [
 const mb = (bytes) => (bytes / 1048576 >= 10 ? Math.round(bytes / 1048576) : Math.round((bytes / 1048576) * 10) / 10)
 const fmtDate = (t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
-export default function Settings({ theme, setTheme, itemCount, actions }) {
+export default function Settings({ theme, setTheme, itemCount, actions, privacy, onPrivacyChange }) {
+  const [flow, setFlow] = useState(null) // 'set' | 'change' | 'remove'
   const fileRef = useRef(null)
   const [busy, setBusy] = useState(null) // 'save' | 'share' | 'read' | 'restore'
   const [message, setMessage] = useState('')
@@ -166,6 +170,51 @@ export default function Settings({ theme, setTheme, itemCount, actions }) {
 
       <section className="group glass">
         <div className="row">
+          <span>Privacy</span>
+          <span className="muted">{privacy.pin ? 'PIN is on' : 'No PIN'}</span>
+        </div>
+        <p className="muted group-note">
+          A PIN keeps casual eyes out, and can hide your Innerwear section. Photos on the phone are not encrypted, and backup files are not locked.
+        </p>
+        {!privacy.pin ? (
+          <div className="group-buttons">
+            <button className="btn-primary" onClick={() => setFlow('set')}>
+              Set a PIN
+            </button>
+          </div>
+        ) : (
+          <>
+            <Switch
+              label="Hide Innerwear until unlocked"
+              hint="Also kept out of search, suggestions and insights"
+              on={privacy.inner}
+              onChange={(v) => {
+                setLockInner(v)
+                onPrivacyChange()
+              }}
+            />
+            <Switch
+              label="Ask for the PIN when Wardo opens"
+              on={privacy.app}
+              onChange={(v) => {
+                setLockApp(v)
+                onPrivacyChange()
+              }}
+            />
+            <div className="group-buttons">
+              <button className="pill" onClick={() => setFlow('change')}>
+                Change PIN
+              </button>
+              <button className="pill" onClick={() => setFlow('remove')}>
+                Remove PIN
+              </button>
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="group glass">
+        <div className="row">
           <span>Backup and restore</span>
         </div>
         <p className="muted group-note">
@@ -254,9 +303,19 @@ export default function Settings({ theme, setTheme, itemCount, actions }) {
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.9.0</span>
+          <span className="muted">Wardo 0.10.0</span>
         </div>
       </section>
+      {flow && (
+        <PinFlow
+          mode={flow}
+          onClose={() => setFlow(null)}
+          onDone={() => {
+            setFlow(null)
+            onPrivacyChange()
+          }}
+        />
+      )}
     </Screen>
   )
 }

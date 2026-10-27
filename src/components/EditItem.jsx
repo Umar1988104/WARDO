@@ -41,6 +41,7 @@ export default function EditItem({ item, folders, actions, onClose, onSaved }) {
       const folderOk = folderId != null && folders.some((f) => f.id === folderId && f.section === section)
       const category = details.category && (CATEGORIES[section] || []).includes(details.category) ? details.category : null
       await db.items.update(item.id, {
+        needsDetails: false,
         name: name.trim() || item.name,
         section,
         folderId: folderOk ? folderId : null,

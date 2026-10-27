@@ -577,3 +577,334 @@ button:active,
 .home .hero {
   margin-top: 4px;
 }
+
+/* =========================================================
+   v0.10: PIN lock, add many, cutout helpers
+   ========================================================= */
+
+/* ---------- PIN pad ---------- */
+.pinpad {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 56px) 24px calc(env(safe-area-inset-bottom, 0px) + 22px);
+  background: var(--mesh), var(--bg);
+  animation: fade-up 0.45s var(--ease-out) both;
+  overflow: hidden;
+}
+.pinpad::before,
+.pinpad::after {
+  content: '';
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0.8;
+}
+.pinpad::before {
+  left: -30vmax;
+  top: -30vmax;
+  background: radial-gradient(circle, var(--blob-a), transparent 65%);
+  animation: drift-a 20s ease-in-out infinite alternate;
+}
+.pinpad::after {
+  right: -34vmax;
+  bottom: -30vmax;
+  background: radial-gradient(circle, var(--blob-b), transparent 65%);
+  animation: drift-b 24s ease-in-out infinite alternate;
+}
+.pinpad > * {
+  position: relative;
+  z-index: 1;
+}
+.pin-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.pin-lock {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--accent-grad);
+  box-shadow: 0 14px 28px rgba(35, 121, 109, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.pin-lock svg {
+  width: 30px;
+  height: 30px;
+}
+.pin-top h2 {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+.pin-dots {
+  display: flex;
+  gap: 16px;
+  margin-top: 18px;
+}
+.pin-dots i {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  transition: background 0.2s ease, transform 0.35s var(--spring);
+}
+.pin-dots i.on {
+  background: var(--accent);
+  transform: scale(1.15);
+}
+.pin-dots.shake {
+  animation: shake 0.45s ease;
+}
+@keyframes shake {
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+.pin-msg {
+  min-height: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #d9604c;
+}
+.pin-keys {
+  width: min(320px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.pin-key {
+  width: 76px;
+  height: 76px;
+  justify-self: center;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 500;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition: transform 0.3s var(--spring), background 0.15s ease;
+}
+.pin-key:active {
+  transform: scale(0.88);
+  background: var(--accent-grad);
+  color: #fff;
+}
+.pin-foot {
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.pin-forgot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 300px;
+  font-size: 13px;
+}
+
+/* ---------- Switch ---------- */
+.switch-row small {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+.switch {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 31px;
+  border-radius: 99px;
+  padding: 2px;
+  background: rgba(120, 130, 125, 0.35);
+  transition: background 0.3s ease;
+}
+.switch i {
+  display: block;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  transition: transform 0.4s var(--spring);
+}
+.switch-on {
+  background: var(--accent-grad);
+}
+.switch-on i {
+  transform: translateX(21px);
+}
+
+/* ---------- Add many, review, warnings ---------- */
+.batch-link,
+.pending {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  text-align: left;
+  transition: transform 0.3s var(--spring);
+}
+.batch-link:active,
+.pending:active {
+  transform: scale(0.97);
+}
+.batch-link strong,
+.pending strong {
+  display: block;
+  font-size: 15.5px;
+}
+.batch-link em,
+.pending em {
+  display: block;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.pending {
+  margin-bottom: 14px;
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.pending .chev,
+.batch-link .chev {
+  font-size: 26px;
+  color: var(--accent);
+}
+
+.batch-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.batch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.batch-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow);
+  animation: fade-up 0.45s var(--ease-out) both;
+}
+.batch-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+.batch-wait img,
+.batch-work img {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+.batch-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.batch-state b {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--accent-grad);
+  box-shadow: 0 6px 14px rgba(35, 121, 109, 0.4);
+  animation: pop 0.5s var(--spring);
+}
+.batch-fail .batch-state b {
+  background: linear-gradient(135deg, #e0704f, #f0a04b);
+}
+.batch-state em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--glass-solid);
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+.batch-spin {
+  width: 28px;
+  height: 28px;
+}
+.batch-cell small {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 10.5px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--text);
+  background: var(--glass-solid);
+}
+.batch-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.review-pic {
+  height: 220px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.review-pic img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.warn-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 22px;
+  border-color: color-mix(in srgb, #e0a04b 55%, transparent);
+  animation: fade-up 0.5s var(--ease-out) both;
+}
+.warn-card strong {
+  font-size: 16px;
+}
+.tile-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tile-lock svg {
+  width: 15px;
+  height: 15px;
+}

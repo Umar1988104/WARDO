@@ -4,11 +4,11 @@ import ItemCard from '../components/ItemCard.jsx'
 import ItemGrid from '../components/ItemGrid.jsx'
 import SectionScreen from './SectionScreen.jsx'
 import FilterSheet from '../components/FilterSheet.jsx'
-import { SearchIcon, FilterIcon } from '../components/Icons.jsx'
+import { SearchIcon, FilterIcon, LockIcon } from '../components/Icons.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
 import { EMPTY_FILTERS, applyFilters, countActive, sortItems } from '../lib/filter.js'
 
-export default function Wardrobe({ items, folders, wearInfo, outfitMap, actions, sectionId, setSectionId, folderId, setFolderId, onAdd, onPlan, onOpenSettings, onOpenItem }) {
+export default function Wardrobe({ items, innerHidden = false, folders, wearInfo, outfitMap, actions, sectionId, setSectionId, folderId, setFolderId, onAdd, onPlan, onOpenSettings, onOpenItem }) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [sort, setSort] = useState('new')
@@ -113,7 +113,15 @@ export default function Wardrobe({ items, folders, wearInfo, outfitMap, actions,
                   <strong>{s.label}</strong>
                   <span className="muted tile-hint">{s.hint}</span>
                   <span className="tile-count">
-                    {count} {count === 1 ? 'item' : 'items'}
+                    {s.id === 'inner' && innerHidden ? (
+                      <span className="tile-lock">
+                        <LockIcon /> Locked
+                      </span>
+                    ) : (
+                      <>
+                        {count} {count === 1 ? 'item' : 'items'}
+                      </>
+                    )}
                   </span>
                 </button>
               )

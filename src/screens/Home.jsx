@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import TodayCard from '../components/TodayCard.jsx'
 import BackupNudge from '../components/BackupNudge.jsx'
-import { SearchIcon, PlusIcon, CalendarIcon, InsightsIcon, SettingsIcon } from '../components/Icons.jsx'
+import { SearchIcon, PlusIcon, CalendarIcon, InsightsIcon, SettingsIcon, LockIcon } from '../components/Icons.jsx'
 import { SECTIONS } from '../sections.js'
 import { daysSince, keyOf, todayKey } from '../lib/dates.js'
 
@@ -29,7 +29,7 @@ function greeting() {
   return 'Good evening'
 }
 
-export default function Home({ items, wearInfo, outfitMap, actions, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
+export default function Home({ items, innerHidden = false, onReview, wearInfo, outfitMap, actions, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
   const stats = useMemo(() => {
     const month = todayKey().slice(0, 7)
     let worn = 0
@@ -42,6 +42,8 @@ export default function Home({ items, wearInfo, outfitMap, actions, onAdd, onPla
     }
     return { total: items.length, worn, forgotten }
   }, [items, wearInfo])
+
+  const pending = useMemo(() => items.filter((i) => i.needsDetails).length, [items])
 
   const counts = useMemo(() => {
     const map = {}
@@ -83,6 +85,20 @@ export default function Home({ items, wearInfo, outfitMap, actions, onAdd, onPla
         </div>
       </div>
 
+      {pending > 0 && (
+        <button className="pending glass" onClick={onReview}>
+          <span>
+            <strong>
+              {pending} new {pending === 1 ? 'piece needs' : 'pieces need'} a name
+            </strong>
+            <em>Tap to add names and details</em>
+          </span>
+          <span className="chev" aria-hidden="true">
+            ›
+          </span>
+        </button>
+      )}
+
       <BackupNudge count={items.length} onOpen={onOpenSettings} />
 
       <TodayCard items={items} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onPlan={onPlan} onOpenItem={onOpenItem} />
@@ -111,7 +127,15 @@ export default function Home({ items, wearInfo, outfitMap, actions, onAdd, onPla
               <strong>{s.label}</strong>
               <span className="muted tile-hint">{s.hint}</span>
               <span className="tile-count">
-                {count} {count === 1 ? 'item' : 'items'}
+                {s.id === 'inner' && innerHidden ? (
+                  <span className="tile-lock">
+                    <LockIcon /> Locked
+                  </span>
+                ) : (
+                  <>
+                    {count} {count === 1 ? 'item' : 'items'}
+                  </>
+                )}
               </span>
             </button>
           )

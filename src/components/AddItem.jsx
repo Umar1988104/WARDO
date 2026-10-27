@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { db } from '../db.js'
 import { defaultSeason } from '../options.js'
-import { downscale, cutout, trimTransparent, dominantColor, makeThumb, compactImage } from '../lib/image.js'
+import { downscale, cutout, trimTransparent, dominantColor, makeThumb, compactImage, bgSimilarity, MODELS } from '../lib/image.js'
 import ItemImage from './ItemImage.jsx'
 import TouchUp from './TouchUp.jsx'
 import ManualCut from './ManualCut.jsx'
@@ -31,7 +31,7 @@ function loadCutMode() {
   }
 }
 
-export default function AddItem({ itemCount, folders, actions, defaultSection = null, defaultFolderId = null, onClose, onSaved }) {
+export default function AddItem({ itemCount, folders, actions, defaultSection = null, defaultFolderId = null, onClose, onSaved, onBatch }) {
   const cameraRef = useRef(null)
   const galleryRef = useRef(null)
   const targetRef = useRef('front')
@@ -41,6 +41,7 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
   const [busy, setBusy] = useState(null) // { slot, message, pct }
   const [notice, setNotice] = useState('')
   const [editing, setEditing] = useState(null) // 'front' | 'back'
+  const [warn, setWarn] = useState(null) // { slot, original, similar, busy } before an auto cutout that may be rough
   const [manual, setManual] = useState(null) // { slot, original } while the by-hand cutout is open
   const [cutMode, setCutModeState] = useState(loadCutMode)
   const [name, setName] = useState('')
@@ -89,38 +90,32 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
     input?.click()
   }
 
-  async function onFile(e) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    const slot = targetRef.current
-
+  // model: 'fast' (default) or 'best' (the other free model, used for the quick retry)
+  async function runAuto(slot, original, model = 'fast') {
     setNotice('')
-    setBusy({ slot, message: 'Preparing your photo', pct: null })
+    setBusy({ slot, message: model === 'best' ? 'Trying the best-quality model' : 'Cutting out your clothes', pct: null })
     try {
-      const original = await downscale(file)
-
-      if (cutMode === 'manual') {
-        // no AI model to download: you cut it out yourself
-        setManual({ slot, original })
-        return
-      }
-
       let raw
       let lastPct = -1
       try {
-        raw = await cutout(original, (key, current, total) => {
-          const pct = total ? Math.round((current / total) * 100) : null
-          if (pct === lastPct && pct !== null) return
-          lastPct = pct
-          setBusy({
-            slot,
-            message: key.startsWith('fetch')
-              ? 'Downloading the cutout model (first time only)'
-              : 'Cutting out your clothes',
-            pct,
-          })
-        })
+        raw = await cutout(
+          original,
+          (key, current, total) => {
+            const pct = total ? Math.round((current / total) * 100) : null
+            if (pct === lastPct && pct !== null) return
+            lastPct = pct
+            setBusy({
+              slot,
+              message: key.startsWith('fetch')
+                ? 'Downloading the cutout model (first time only)'
+                : model === 'best'
+                  ? 'Trying the best-quality model'
+                  : 'Cutting out your clothes',
+              pct,
+            })
+          },
+          MODELS[model]
+        )
       } catch (err) {
         console.error('Cutout failed:', err)
         raw = original
@@ -130,11 +125,44 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
       }
 
       const final = await trimTransparent(raw)
-      setPhoto(slot, { original, raw, final })
+      setPhoto(slot, { original, raw, final, model })
       if (slot === 'front') autoColor(final)
     } catch (err) {
       setNotice(err?.message || 'Something went wrong with this photo.')
     } finally {
+      setBusy(null)
+    }
+  }
+
+  async function onFile(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const slot = targetRef.current
+
+    setNotice('')
+    setWarn(null)
+    setBusy({ slot, message: 'Preparing your photo', pct: null })
+    try {
+      const original = await downscale(file)
+
+      if (cutMode === 'manual') {
+        // no AI model to download: you cut it out yourself
+        setManual({ slot, original })
+        setBusy(null)
+        return
+      }
+
+      // warn first if the background looks like the clothes, instead of after a slow rough cutout
+      const check = await bgSimilarity(original).catch(() => null)
+      if (check && (check.similar || check.busy)) {
+        setWarn({ slot, original, similar: check.similar, busy: check.busy })
+        setBusy(null)
+        return
+      }
+      await runAuto(slot, original)
+    } catch (err) {
+      setNotice(err?.message || 'Something went wrong with this photo.')
       setBusy(null)
     }
   }
@@ -217,6 +245,17 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
       </header>
 
       <div className="ov-body">
+        {onBatch && (
+          <button type="button" className="batch-link glass" onClick={onBatch}>
+            <span>
+              <strong>Add many at once</strong>
+              <em>Photograph lots of clothes now, name them later</em>
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </button>
+        )}
         <Segmented options={CUT_MODES} value={cutMode} onChange={setCutMode} />
         <p className="muted tip">
           {cutMode === 'auto'
@@ -254,6 +293,11 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
                   </button>
                   {photo && (
                     <>
+                      {photo.model !== 'best' && cutMode === 'auto' && (
+                        <button className="pill" disabled={!!busy} onClick={() => runAuto(id, photo.original, 'best')}>
+                          Retry (best quality)
+                        </button>
+                      )}
                       <button className="pill" disabled={!!busy} onClick={() => setManual({ slot: id, original: photo.original })}>
                         Cut by hand
                       </button>
@@ -270,6 +314,53 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
             )
           })}
         </div>
+
+        {(photos.front || photos.back) && !warn && (
+          <p className="muted tip">Edges look rough? Try Retry (best quality), Touch up, or Cut by hand.</p>
+        )}
+
+        {warn && (
+          <div className="warn-card glass">
+            <strong>This photo may cut out roughly</strong>
+            <p className="muted">
+              {warn.similar && 'The background looks close to the colour of the clothing. '}
+              {warn.busy && 'The background looks busy. '}
+              A plain background in a different colour, with good light, gives the cleanest result.
+            </p>
+            <div className="group-buttons">
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  const w = warn
+                  setWarn(null)
+                  runAuto(w.slot, w.original)
+                }}
+              >
+                Cut out anyway
+              </button>
+              <button
+                className="pill"
+                onClick={() => {
+                  const w = warn
+                  setWarn(null)
+                  setManual({ slot: w.slot, original: w.original })
+                }}
+              >
+                Cut by hand
+              </button>
+              <button
+                className="pill pill-quiet"
+                onClick={() => {
+                  const w = warn
+                  setWarn(null)
+                  pick(w.slot, 'camera')
+                }}
+              >
+                Retake photo
+              </button>
+            </div>
+          </div>
+        )}
 
         {notice && <p className="notice">{notice}</p>}
 

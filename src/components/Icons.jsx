@@ -115,3 +115,10 @@ export const UserIcon = () => (
     <path d="M4.5 20c.9-3.6 4-5.4 7.5-5.4s6.6 1.8 7.5 5.4" />
   </svg>
 )
+
+export const LockIcon = () => (
+  <svg {...base}>
+    <rect x="5" y="10.5" width="14" height="10" rx="3" />
+    <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+  </svg>
+)

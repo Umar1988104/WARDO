@@ -43,10 +43,14 @@ export async function downscale(file) {
 // To trade quality for speed, change the model to 'isnet_quint8' (smaller and faster).
 const MODEL = 'isnet_fp16'
 
-export async function cutout(photoBlob, onProgress) {
+// 'fast' is the normal one. 'best' is the other free model: slower and a bigger one-time download,
+// but cleaner edges, so it is offered as a quick retry.
+export const MODELS = { fast: MODEL, best: 'isnet' }
+
+export async function cutout(photoBlob, onProgress, model = MODEL) {
   const { removeBackground } = await import('@imgly/background-removal')
   return removeBackground(photoBlob, {
-    model: MODEL,
+    model,
     output: { format: 'image/png' },
     progress: (key, current, total) => onProgress?.(key, current, total),
   })
@@ -205,4 +209,53 @@ export async function compactImage(blob) {
   } catch {
     return blob
   }
+}
+
+// ---------- v0.10: warn before a cutout that will probably be rough ----------
+
+// Compares the edge of the photo (usually background) with the middle (usually the clothing).
+// similar: the two look alike in colour. busy: the edge is full of different colours.
+// The limits are rough guesses that work for typical photos; they only trigger a gentle warning.
+export async function bgSimilarity(blob) {
+  const bmp = await createImageBitmap(blob)
+  const S = 48
+  const canvas = document.createElement('canvas')
+  canvas.width = S
+  canvas.height = S
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.drawImage(bmp, 0, 0, S, S)
+  bmp.close?.()
+  const { data } = ctx.getImageData(0, 0, S, S)
+
+  const edge = Math.round(S * 0.1)
+  const border = { n: 0, r: 0, g: 0, b: 0, rr: 0, gg: 0, bb: 0 }
+  const mid = { n: 0, r: 0, g: 0, b: 0 }
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const i = (y * S + x) * 4
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      if (x < edge || y < edge || x >= S - edge || y >= S - edge) {
+        border.n++
+        border.r += r
+        border.g += g
+        border.b += b
+        border.rr += r * r
+        border.gg += g * g
+        border.bb += b * b
+      } else if (x >= S * 0.3 && x < S * 0.7 && y >= S * 0.25 && y < S * 0.75) {
+        mid.n++
+        mid.r += r
+        mid.g += g
+        mid.b += b
+      }
+    }
+  }
+  const mb = [border.r / border.n, border.g / border.n, border.b / border.n]
+  const mm = [mid.r / mid.n, mid.g / mid.n, mid.b / mid.n]
+  const distance = Math.hypot(mb[0] - mm[0], mb[1] - mm[1], mb[2] - mm[2])
+  const varOf = (sq, m) => Math.max(0, sq / border.n - m * m)
+  const spread = Math.sqrt((varOf(border.rr, mb[0]) + varOf(border.gg, mb[1]) + varOf(border.bb, mb[2])) / 3)
+  return { similar: distance < 40, busy: spread > 55, distance, spread }
 }
