@@ -1,11 +1,11 @@
-import { HangerIcon, CalendarIcon, PlusIcon, InsightsIcon, SettingsIcon } from './Icons.jsx'
+import { HomeIcon, HangerIcon, CalendarIcon, PlusIcon, UserIcon } from './Icons.jsx'
 
 const TABS = [
+  { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'wardrobe', label: 'Wardrobe', Icon: HangerIcon },
-  { id: 'planner', label: 'Planner', Icon: CalendarIcon },
   { id: 'add', label: 'Add', Icon: PlusIcon },
-  { id: 'insights', label: 'Insights', Icon: InsightsIcon },
-  { id: 'settings', label: 'Settings', Icon: SettingsIcon },
+  { id: 'planner', label: 'Planner', Icon: CalendarIcon },
+  { id: 'settings', label: 'Profile', Icon: UserIcon },
 ]
 
 export default function TabBar({ tab, setTab, onAdd }) {
@@ -19,7 +19,7 @@ export default function TabBar({ tab, setTab, onAdd }) {
         ) : (
           <button
             key={id}
-            className={'tab' + (tab === id ? ' tab-active' : '')}
+            className={'tab' + ((tab === id || (tab === 'insights' && id === 'home')) ? ' tab-active' : '')}
             onClick={() => setTab(id)}
             aria-current={tab === id ? 'page' : undefined}
           >

@@ -102,3 +102,16 @@ export const FolderIcon = () => (
     <path d="M3.5 7.5a2.5 2.5 0 0 1 2.5-2.5h3.2c.7 0 1.3.3 1.7.8l.9 1.2h5.7a2.5 2.5 0 0 1 2.5 2.5v7.5A2.5 2.5 0 0 1 17.5 19H6a2.5 2.5 0 0 1-2.5-2.5Z" />
   </svg>
 )
+
+export const HomeIcon = () => (
+  <svg {...base}>
+    <path d="M4 11 12 4l8 7v8a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19v-8Z" />
+  </svg>
+)
+
+export const UserIcon = () => (
+  <svg {...base}>
+    <circle cx="12" cy="8.5" r="3.8" />
+    <path d="M4.5 20c.9-3.6 4-5.4 7.5-5.4s6.6 1.8 7.5 5.4" />
+  </svg>
+)

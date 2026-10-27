@@ -6,6 +6,8 @@ import AddItem from './components/AddItem.jsx'
 import ItemDetail from './components/ItemDetail.jsx'
 import EditItem from './components/EditItem.jsx'
 import ThemeToggle, { isDarkNow } from './components/ThemeToggle.jsx'
+import Home from './screens/Home.jsx'
+import Welcome from './components/Welcome.jsx'
 import Wardrobe from './screens/Wardrobe.jsx'
 import Planner from './screens/Planner.jsx'
 import Insights from './screens/Insights.jsx'
@@ -20,13 +22,29 @@ function loadTheme() {
 }
 
 export default function App() {
-  const [tab, setTab] = useState('wardrobe')
+  const [tab, setTab] = useState('home')
   const [sectionId, setSectionId] = useState(null)
   const [folderId, setFolderId] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
   const [openId, setOpenId] = useState(null)
   const [editId, setEditId] = useState(null)
   const [theme, setTheme] = useState(loadTheme)
+  const [welcome, setWelcome] = useState(() => {
+    try {
+      return !localStorage.getItem('wardo-welcomed')
+    } catch {
+      return false
+    }
+  })
+
+  function finishWelcome() {
+    try {
+      localStorage.setItem('wardo-welcomed', '1')
+    } catch {
+      /* it may show again next time, that is fine */
+    }
+    setWelcome(false)
+  }
 
   const { items, folders, wearInfo, outfitMap, outfits, actions } = useData()
 
@@ -38,7 +56,7 @@ export default function App() {
       /* storage can be unavailable; the theme just won't persist */
     }
     // keep the browser / Android status bar colour in sync with the chosen theme
-    const colour = isDarkNow(theme) ? '#0c0f1a' : '#eef0fb'
+    const colour = isDarkNow(theme) ? '#111715' : '#f7f3ee'
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
       m.removeAttribute('media')
       m.setAttribute('content', colour)
@@ -70,6 +88,29 @@ export default function App() {
     <div className="app">
       <div className="backdrop-art" aria-hidden="true" />
 
+      {tab === 'home' && (
+        <Home
+          items={items}
+          wearInfo={wearInfo}
+          outfitMap={outfitMap}
+          actions={actions}
+          onAdd={() => setAddOpen(true)}
+          onPlan={() => setTab('planner')}
+          onInsights={() => setTab('insights')}
+          onOpenSettings={() => setTab('settings')}
+          onSearch={() => {
+            setSectionId(null)
+            setFolderId(null)
+            setTab('wardrobe')
+          }}
+          onOpenSection={(id) => {
+            setSectionId(id)
+            setFolderId(null)
+            setTab('wardrobe')
+          }}
+          onOpenItem={setOpenId}
+        />
+      )}
       {tab === 'wardrobe' && (
         <Wardrobe
           items={items}
@@ -94,7 +135,7 @@ export default function App() {
         <Planner items={items} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
       )}
       {tab === 'insights' && (
-        <Insights items={items} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} />
+        <Insights items={items} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
       )}
       {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} itemCount={items.length} actions={actions} />}
 
@@ -123,6 +164,7 @@ export default function App() {
         />
       )}
       {editItem && <EditItem item={editItem} folders={folders} actions={actions} onClose={() => setEditId(null)} onSaved={handleEdited} />}
+      {welcome && <Welcome onDone={finishWelcome} />}
       {addOpen && (
         <AddItem
           itemCount={items.length}

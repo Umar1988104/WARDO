@@ -2,9 +2,7 @@ import { useMemo, useState } from 'react'
 import Screen from '../components/Screen.jsx'
 import ItemCard from '../components/ItemCard.jsx'
 import ItemGrid from '../components/ItemGrid.jsx'
-import BackupNudge from '../components/BackupNudge.jsx'
 import SectionScreen from './SectionScreen.jsx'
-import TodayCard from '../components/TodayCard.jsx'
 import FilterSheet from '../components/FilterSheet.jsx'
 import { SearchIcon, FilterIcon } from '../components/Icons.jsx'
 import { SECTIONS, sectionById } from '../sections.js'
@@ -56,7 +54,7 @@ export default function Wardrobe({ items, folders, wearInfo, outfitMap, actions,
   const recent = items.slice(0, 10)
 
   return (
-    <Screen title={resultsMode ? 'All items' : 'Wardrobe'} back={resultsMode ? { label: 'Wardrobe', onClick: leaveResults } : undefined}>
+    <Screen title={resultsMode ? 'All items' : 'My Wardrobe'} back={resultsMode ? { label: 'Wardrobe', onClick: leaveResults } : undefined}>
       <div className="searchrow">
         <label className="search glass">
           <SearchIcon />
@@ -103,17 +101,6 @@ export default function Wardrobe({ items, folders, wearInfo, outfitMap, actions,
         )
       ) : (
         <>
-          <BackupNudge count={items.length} onOpen={onOpenSettings} />
-
-          <TodayCard
-            items={items}
-            outfitMap={outfitMap}
-            wearInfo={wearInfo}
-            actions={actions}
-            onPlan={onPlan}
-            onOpenItem={onOpenItem}
-          />
-
           <h3 className="section-title">Sections</h3>
           <div className="tiles">
             {SECTIONS.map((s) => {

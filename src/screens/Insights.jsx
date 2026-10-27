@@ -10,7 +10,7 @@ const WINDOWS = [
   { value: 90, label: '90 days' },
 ]
 
-export default function Insights({ items, wearInfo, outfits, onOpenItem }) {
+export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack }) {
   const [days, setDays] = useState(30)
 
   // a piece counts from the day it was last worn, or the day it was added if never worn
@@ -47,7 +47,7 @@ export default function Insights({ items, wearInfo, outfits, onOpenItem }) {
   ]
 
   return (
-    <Screen title="Insights">
+    <Screen title="Insights" back={onBack ? { label: 'Home', onClick: onBack } : undefined}>
       <div className="stats">
         {stats.map((s) => (
           <div key={s.label} className="stat glass">

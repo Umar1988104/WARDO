@@ -146,10 +146,17 @@ export default function Settings({ theme, setTheme, itemCount, actions }) {
     }
   }
 
+  const offline =
+    typeof navigator !== 'undefined' && 'serviceWorker' in navigator
+      ? navigator.serviceWorker.controller
+        ? 'Ready (cutout model works offline after its first download)'
+        : 'Getting ready, reopen the app once'
+      : 'Not supported here'
+
   const canPersist = typeof navigator !== 'undefined' && !!navigator.storage?.persist
 
   return (
-    <Screen title="Settings">
+    <Screen title="Profile">
       <section className="group glass">
         <div className="row">
           <span>Appearance</span>
@@ -238,12 +245,16 @@ export default function Settings({ theme, setTheme, itemCount, actions }) {
           </div>
         )}
         <div className="row">
+          <span>Offline use</span>
+          <span className="muted">{offline}</span>
+        </div>
+        <div className="row">
           <span>Your data</span>
           <span className="muted">Stays on this phone</span>
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.8.1</span>
+          <span className="muted">Wardo 0.9.0</span>
         </div>
       </section>
     </Screen>

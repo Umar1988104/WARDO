@@ -1,0 +1,579 @@
+/* =========================================================
+   Wardo v0.9.1: Closetly colours, real iOS glass.
+   Aurora backdrop, frosted panels, stacked cards, spring motion.
+   Loaded after styles.css.
+   ========================================================= */
+
+:root {
+  color-scheme: light;
+  --bg: #f3eee6;
+  --text: #17231f;
+  --muted: #6d7a75;
+  --accent: #23796d;
+  --accent-2: #3fa592;
+  --accent-grad: linear-gradient(135deg, #17564e 0%, #25887a 55%, #4fb9a2 100%);
+  --mint: linear-gradient(135deg, #9fe0cd, #5fc4aa);
+  --glass: linear-gradient(150deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.4));
+  --glass-solid: rgba(255, 252, 247, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 14px 38px rgba(80, 62, 36, 0.13), 0 2px 6px rgba(80, 62, 36, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(255, 255, 255, 0.35);
+  --hairline: rgba(23, 35, 31, 0.09);
+  --scrim: rgba(18, 24, 22, 0.38);
+  --mesh:
+    radial-gradient(60% 40% at 0% 0%, rgba(255, 196, 150, 0.55), transparent 70%),
+    radial-gradient(55% 38% at 100% 22%, rgba(150, 226, 205, 0.55), transparent 70%),
+    radial-gradient(60% 42% at 20% 100%, rgba(196, 176, 255, 0.45), transparent 70%);
+  --blob-a: rgba(255, 183, 130, 0.65);
+  --blob-b: rgba(120, 220, 196, 0.6);
+  --blob-c: rgba(190, 168, 255, 0.5);
+  --spring: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --ease-out: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0b1210;
+    --text: #eef5f1;
+    --muted: #8fa19a;
+    --accent: #6fd0bd;
+    --accent-2: #8fe0cf;
+    --glass: linear-gradient(150deg, rgba(40, 62, 56, 0.7), rgba(18, 30, 27, 0.5));
+    --glass-solid: rgba(20, 31, 28, 0.94);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    --hairline: rgba(255, 255, 255, 0.09);
+    --scrim: rgba(0, 0, 0, 0.62);
+    --mesh: none;
+    --blob-a: rgba(214, 120, 70, 0.35);
+    --blob-b: rgba(40, 160, 140, 0.4);
+    --blob-c: rgba(110, 80, 210, 0.35);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1210;
+  --text: #eef5f1;
+  --muted: #8fa19a;
+  --accent: #6fd0bd;
+  --accent-2: #8fe0cf;
+  --glass: linear-gradient(150deg, rgba(40, 62, 56, 0.7), rgba(18, 30, 27, 0.5));
+  --glass-solid: rgba(20, 31, 28, 0.94);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --hairline: rgba(255, 255, 255, 0.09);
+  --scrim: rgba(0, 0, 0, 0.62);
+  --mesh: none;
+  --blob-a: rgba(214, 120, 70, 0.35);
+  --blob-b: rgba(40, 160, 140, 0.4);
+  --blob-c: rgba(110, 80, 210, 0.35);
+}
+
+.tone-blue  { --t1: #4f86d6; --t2: #9cc0f2; --tint: rgba(79, 134, 214, 0.2); }
+.tone-amber { --t1: #d98f1f; --t2: #f4c978; --tint: rgba(217, 143, 31, 0.2); }
+.tone-rose  { --t1: #c2679a; --t2: #efaed0; --tint: rgba(194, 103, 154, 0.2); }
+.tone-mint  { --t1: #23a083; --t2: #8fe0cb; --tint: rgba(35, 160, 131, 0.2); }
+
+/* ---------- Living backdrop: three soft colour clouds drifting slowly ---------- */
+.backdrop-art {
+  overflow: hidden;
+}
+.backdrop-art::before,
+.backdrop-art::after {
+  content: '';
+  position: absolute;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.85;
+  will-change: transform;
+}
+.backdrop-art::before {
+  left: -22vmax;
+  top: -18vmax;
+  background: radial-gradient(circle, var(--blob-a), transparent 65%);
+  animation: drift-a 22s ease-in-out infinite alternate;
+}
+.backdrop-art::after {
+  right: -26vmax;
+  top: 28vh;
+  background: radial-gradient(circle, var(--blob-b), transparent 65%);
+  animation: drift-b 26s ease-in-out infinite alternate;
+}
+@keyframes drift-a {
+  to { transform: translate(18vmax, 14vmax) scale(1.15); }
+}
+@keyframes drift-b {
+  to { transform: translate(-16vmax, 12vmax) scale(0.9); }
+}
+
+/* ---------- Glass: real frosted panels again ---------- */
+.glass {
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  backdrop-filter: blur(26px) saturate(190%);
+}
+
+.large-title {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* ---------- Motion: everything enters softly, presses feel springy ---------- */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(22px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.28) translateY(-2px); }
+  100% { transform: scale(1); }
+}
+@keyframes shine {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(260%) skewX(-18deg); }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(var(--r, 0deg)) translateY(0); }
+  50% { transform: rotate(calc(var(--r, 0deg) + 1.5deg)) translateY(-4px); }
+}
+@keyframes ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.home > *,
+.screen-body > * {
+  animation: fade-up 0.7s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.home > *:nth-child(1) { --i: 1; }
+.home > *:nth-child(2) { --i: 2; }
+.home > *:nth-child(3) { --i: 3; }
+.home > *:nth-child(4) { --i: 4; }
+.home > *:nth-child(5) { --i: 5; }
+.home > *:nth-child(6) { --i: 6; }
+.home > *:nth-child(7) { --i: 7; }
+.home > *:nth-child(8) { --i: 8; }
+.home > *:nth-child(9) { --i: 9; }
+.home > *:nth-child(10) { --i: 10; }
+.home > *:nth-child(11) { --i: 11; }
+.home > *:nth-child(12) { --i: 12; }
+.screen-body > *:nth-child(1) { --i: 1; }
+.screen-body > *:nth-child(2) { --i: 2; }
+.screen-body > *:nth-child(3) { --i: 3; }
+.screen-body > *:nth-child(4) { --i: 4; }
+.screen-body > *:nth-child(5) { --i: 5; }
+.screen-body > *:nth-child(6) { --i: 6; }
+.screen-body > *:nth-child(7) { --i: 7; }
+.screen-body > *:nth-child(8) { --i: 8; }
+.screen-body > *:nth-child(9) { --i: 9; }
+.screen-body > *:nth-child(10) { --i: 10; }
+
+.item-grid > .item-card,
+.recent-row > .item-card {
+  animation: fade-up 0.55s var(--ease-out) both;
+}
+.item-grid > .item-card:nth-child(2n) { animation-delay: 60ms; }
+.item-grid > .item-card:nth-child(3n) { animation-delay: 110ms; }
+.item-grid > .item-card:nth-child(4n) { animation-delay: 160ms; }
+
+button:active,
+.tile:active,
+.quick:active,
+.item-card:active {
+  transition: transform 0.12s ease;
+}
+
+/* ---------- Floating glass tab bar with a glowing active pill ---------- */
+.tabbar {
+  background: var(--glass);
+  border-radius: 34px;
+  height: 72px;
+  box-shadow: 0 18px 44px rgba(60, 46, 26, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+}
+.tab {
+  position: relative;
+  z-index: 0;
+}
+.tab::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 4px 6px;
+  border-radius: 22px;
+  background: var(--accent-grad);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.3s ease, transform 0.45s var(--spring);
+  box-shadow: 0 8px 18px rgba(35, 121, 109, 0.35);
+}
+.tab-active {
+  color: #fff;
+}
+.tab-active::before {
+  opacity: 1;
+  transform: none;
+}
+.tab-active svg {
+  animation: pop 0.5s var(--spring);
+}
+.tab-add {
+  position: relative;
+  background: var(--mint);
+  box-shadow: 0 14px 28px rgba(35, 160, 131, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.65), inset 0 -3px 6px rgba(20, 110, 90, 0.2);
+  transition: transform 0.35s var(--spring);
+}
+.tab-add::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(95, 196, 170, 0.8);
+  animation: ring 2.8s ease-out infinite;
+  pointer-events: none;
+}
+.tab-add svg {
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 90, 70, 0.4));
+}
+.tab-add:active {
+  transform: scale(0.88) rotate(90deg);
+}
+
+/* ---------- Hero: glossy moving teal card, outfit pieces fanned like a hand of cards ---------- */
+.hero {
+  color: #fff;
+  background: linear-gradient(120deg, #123f3a, #23796d, #4fb9a2, #23796d);
+  background-size: 260% 260%;
+  animation: gradient-move 9s ease-in-out infinite alternate, fade-up 0.7s var(--ease-out) both;
+  animation-delay: 0s, calc(var(--i, 0) * 70ms);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 22px 44px rgba(23, 86, 78, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.hero::before {
+  display: block;
+  width: auto;
+  height: auto;
+  inset: 0;
+  right: auto;
+  top: 0;
+  left: 0;
+  width: 40%;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  animation: shine 5.5s ease-in-out infinite;
+}
+.hero::after {
+  display: block;
+  background: radial-gradient(circle, rgba(255, 214, 170, 0.5), transparent 70%);
+}
+.hero h2 {
+  max-width: none;
+}
+.hero p {
+  color: rgba(255, 255, 255, 0.85);
+}
+.hero-btn {
+  color: #17564e;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 18px rgba(8, 40, 36, 0.28);
+  transition: transform 0.3s var(--spring);
+}
+.hero-btn-ghost {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.hero .ostrip {
+  justify-content: center;
+  overflow: visible;
+  padding: 14px 10px 10px;
+}
+.hero .othumb {
+  --r: 0deg;
+  width: 84px;
+  height: 104px;
+  margin-left: -16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 24px rgba(5, 36, 32, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6);
+  transform: rotate(var(--r));
+  animation: sway 6s ease-in-out infinite;
+  transition: transform 0.4s var(--spring), z-index 0s;
+}
+.hero .othumb:first-child { margin-left: 0; }
+.hero .othumb:nth-child(1) { --r: -7deg; }
+.hero .othumb:nth-child(2) { --r: 2deg; animation-delay: -1.5s; z-index: 2; margin-top: -8px; }
+.hero .othumb:nth-child(3) { --r: 8deg; animation-delay: -3s; }
+.hero .othumb:nth-child(4) { --r: -3deg; animation-delay: -4s; }
+.hero .othumb:active {
+  transform: translateY(-10px) scale(1.08) rotate(0deg);
+  z-index: 5;
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  background: var(--accent-grad);
+  box-shadow: 0 10px 22px rgba(35, 121, 109, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.3s var(--spring);
+}
+.btn-primary:active {
+  transform: scale(0.95);
+}
+.pill {
+  transition: transform 0.3s var(--spring);
+}
+
+/* ---------- Stats: glass tiles, gradient numbers ---------- */
+.stat strong {
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.home-stats .stat-warn strong {
+  background: linear-gradient(135deg, #e0704f, #f0a04b);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ---------- Home ---------- */
+.home-hello h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.home-hello p {
+  margin-top: 2px;
+}
+.home-search {
+  width: 100%;
+  margin: 16px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 18px;
+  color: var(--muted);
+  text-align: left;
+}
+.home-search svg {
+  width: 20px;
+  height: 20px;
+}
+.home-stats {
+  margin-bottom: 16px;
+}
+.quick-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.quick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 4px 11px;
+  border-radius: 22px;
+  font-size: 12px;
+  font-weight: 650;
+  transition: transform 0.35s var(--spring);
+}
+.quick:active {
+  transform: scale(0.9);
+}
+.quick .quick-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(145deg, var(--t2), var(--t1));
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--t1) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- Section tiles: each one a little pile of cards ---------- */
+.tiles {
+  row-gap: 30px;
+  padding-bottom: 14px;
+}
+.tile {
+  background: linear-gradient(160deg, var(--tint), transparent 70%), var(--glass);
+  box-shadow:
+    var(--glass-shadow),
+    0 9px 0 -4px color-mix(in srgb, var(--t1) 22%, var(--glass-solid)),
+    0 17px 0 -8px color-mix(in srgb, var(--t1) 12%, var(--glass-solid));
+  transition: transform 0.35s var(--spring), box-shadow 0.35s ease;
+}
+.tile:active {
+  transform: translateY(5px) scale(0.97);
+}
+.tile .chip {
+  background: linear-gradient(145deg, var(--t2), var(--t1));
+  color: #fff;
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--t1) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- Item cards: lifted glass ---------- */
+.item-card {
+  box-shadow: 0 10px 24px rgba(80, 62, 36, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.35s var(--spring);
+}
+.item-card:active {
+  transform: scale(0.95);
+}
+.item-thumb {
+  background: radial-gradient(90% 80% at 50% 25%, rgba(255, 255, 255, 0.9), transparent 70%), linear-gradient(160deg, var(--tint), transparent 85%);
+}
+.item-thumb img {
+  filter: drop-shadow(0 8px 10px rgba(60, 46, 26, 0.22));
+}
+
+/* ---------- Sheets and overlays: springy, with a blurred scrim ---------- */
+.scrim {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.sheet {
+  transition: transform 0.55s var(--spring);
+  background: var(--glass);
+}
+.sheet-pop {
+  animation: sheet-in 0.5s var(--spring);
+}
+.overlay {
+  animation: rise 0.5s var(--spring);
+}
+
+/* ---------- Welcome (first launch) ---------- */
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 24px 28px calc(env(safe-area-inset-bottom, 0px) + 34px);
+  color: #fff;
+  overflow: hidden;
+  background: linear-gradient(180deg, #c7a77f 0%, #7d6650 42%, #1f4540 100%);
+}
+.welcome::before,
+.welcome::after {
+  content: '';
+  position: absolute;
+  width: 90vmax;
+  height: 90vmax;
+  border-radius: 50%;
+  filter: blur(50px);
+  pointer-events: none;
+}
+.welcome::before {
+  right: -40vmax;
+  top: -34vmax;
+  background: radial-gradient(circle, rgba(255, 214, 150, 0.8), transparent 62%);
+  animation: drift-b 14s ease-in-out infinite alternate;
+}
+.welcome::after {
+  left: -50vmax;
+  bottom: -50vmax;
+  background: radial-gradient(circle, rgba(95, 196, 170, 0.6), transparent 62%);
+  animation: drift-a 16s ease-in-out infinite alternate;
+}
+.welcome > * {
+  position: relative;
+  z-index: 1;
+  animation: fade-up 0.9s var(--ease-out) both;
+}
+.welcome .welcome-hanger {
+  align-self: center;
+  width: 92px;
+  height: 92px;
+  margin-bottom: auto;
+  margin-top: 18vh;
+  border-radius: 30px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: fade-up 0.9s var(--ease-out) both, sway 5s ease-in-out infinite;
+}
+.welcome .welcome-hanger svg {
+  width: 48px;
+  height: 48px;
+}
+.welcome h1 {
+  font-family: var(--font-serif);
+  font-size: 58px;
+  font-weight: 500;
+  text-align: center;
+  animation-delay: 0.15s;
+}
+.welcome .welcome-sub {
+  text-align: center;
+  font-size: 18px;
+  animation-delay: 0.3s;
+}
+.welcome .welcome-steps {
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 22px;
+  animation-delay: 0.45s;
+}
+.welcome .welcome-go {
+  height: 56px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 17px;
+  color: #17564e;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+  animation-delay: 0.6s;
+  transition: transform 0.3s var(--spring);
+}
+.welcome .welcome-go:active {
+  transform: scale(0.95);
+}
+.welcome .welcome-skip {
+  height: 40px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 15px;
+  animation-delay: 0.7s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.home .section-title {
+  margin: 26px 4px 12px;
+}
+.home .hero {
+  margin-top: 4px;
+}
