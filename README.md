@@ -6,7 +6,7 @@ Free, private, and runs entirely on your phone. No account, no server.
 
 ## Status
 
-v0.8.0: add items with automatic or by-hand cutout, touch-up, tags, search and filters, folders, wear tracking, forgotten clothes, outfit planner calendar, daily suggestion, backup and restore. All data stays on the device.
+v0.8.1: add items with automatic or by-hand cutout, touch-up, tags, search and filters, folders, wear tracking, forgotten clothes, outfit planner calendar, daily suggestion, backup and restore. All data stays on the device.
 
 ## Run locally
 
