@@ -51,7 +51,7 @@ export default function WeatherSettings() {
   }
 
   return (
-    <section className="group glass">
+    <>
       <Switch
         label="Weather suggestions"
         hint="Picks warmer or lighter pieces from the forecast"
@@ -98,6 +98,6 @@ export default function WeatherSettings() {
           )}
         </>
       )}
-    </section>
+    </>
   )
 }

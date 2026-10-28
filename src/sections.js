@@ -1,6 +1,7 @@
-import { SnowIcon, SunIcon, InnerIcon, AccessoryIcon } from './components/Icons.jsx'
+import { CommonIcon, SnowIcon, SunIcon, InnerIcon, AccessoryIcon } from './components/Icons.jsx'
 
 export const SECTIONS = [
+  { id: 'common', label: 'Common', hint: 'Wear it all year: jeans, tees, shoes', Icon: CommonIcon, tone: 'violet' },
   { id: 'winter', label: 'Winter', hint: 'Jackets, sweaters, hoodies', Icon: SnowIcon, tone: 'blue' },
   { id: 'summer', label: 'Summer', hint: 'Tees, shorts, light layers', Icon: SunIcon, tone: 'amber' },
   { id: 'inner', label: 'Innerwear', hint: 'Basics and thermals', Icon: InnerIcon, tone: 'rose' },

@@ -78,6 +78,14 @@ export const AccessoryIcon = () => (
   </svg>
 )
 
+// two arrows chasing each other: pieces that work all year round
+export const CommonIcon = () => (
+  <svg {...base}>
+    <path d="M20 12a8 8 0 0 1-13.7 5.6M4 12a8 8 0 0 1 13.7-5.6" />
+    <path d="M17.7 3v3.4h-3.4M6.3 21v-3.4h3.4" />
+  </svg>
+)
+
 export const ChevronLeftIcon = () => (
   <svg {...base} width={20} height={20} strokeWidth={2.2}>
     <path d="M15 5l-7 7 7 7" />

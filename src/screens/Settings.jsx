@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import Screen from '../components/Screen.jsx'
-import LookAndFeel from '../components/LookAndFeel.jsx'
+import { YouPanel, LookPanel, SpeedPanel, HabitsPanel } from '../components/LookAndFeel.jsx'
 import WeatherSettings from '../components/WeatherSettings.jsx'
 import Switch from '../components/Switch.jsx'
 import { PinFlow } from '../components/PinPad.jsx'
 import { setLockApp, setLockInner } from '../lib/lock.js'
+import { PACKS, currentPreset, usePrefs } from '../lib/prefs.js'
 import {
   buildBackup,
   backupFileName,
@@ -20,8 +21,31 @@ import {
 const mb = (bytes) => (bytes / 1048576 >= 10 ? Math.round(bytes / 1048576) : Math.round((bytes / 1048576) * 10) / 10)
 const fmtDate = (t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
+// One tappable title with its contents folded away until it is opened.
+function ProfRow({ id, icon, title, status, open, onToggle, children }) {
+  const isOpen = open === id
+  return (
+    <section className="prof-row glass">
+      <button className="prof-row-head" aria-expanded={isOpen} onClick={() => onToggle(id)}>
+        <span className="prof-ico">{icon}</span>
+        <span className="prof-row-text">
+          <strong>{title}</strong>
+          <span className="muted">{status}</span>
+        </span>
+        <i className={'prof-chev' + (isOpen ? ' prof-chev-open' : '')} aria-hidden="true">
+          ›
+        </i>
+      </button>
+      {isOpen && <div className="prof-body group">{children}</div>}
+    </section>
+  )
+}
+
 export default function Settings({ theme, setTheme, itemCount, actions, privacy, onPrivacyChange }) {
   const [flow, setFlow] = useState(null) // 'set' | 'change' | 'remove'
+  const [open, setOpen] = useState(null) // which Profile section is unfolded
+  const prefs = usePrefs()
+  const toggle = (id) => setOpen((cur) => (cur === id ? null : id))
   const fileRef = useRef(null)
   const [busy, setBusy] = useState(null) // 'save' | 'share' | 'read' | 'restore'
   const [message, setMessage] = useState('')
@@ -152,6 +176,14 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         : 'Getting ready, reopen the app once'
       : 'Not supported here'
 
+  const preset = currentPreset(prefs)
+  const tiles = [
+    { id: 'look', icon: '🎨', title: 'Look', status: (PACKS[prefs.pack]?.label || 'Closetly') + (prefs.accent ? ' · custom' : '') },
+    { id: 'speed', icon: '⚡', title: 'Speed', status: preset === 'custom' ? 'Custom' : preset[0].toUpperCase() + preset.slice(1) },
+    { id: 'weather', icon: '⛅', title: 'Weather', status: prefs.weatherOn ? prefs.place?.name?.split(',')[0] || 'Pick a place' : 'Off' },
+    { id: 'habits', icon: '👕', title: 'Wardrobe', status: 'Laundry, grid, start' },
+  ]
+
   const canPersist = typeof navigator !== 'undefined' && !!navigator.storage?.persist
 
   return (
@@ -170,14 +202,41 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
           )
       }
     >
-      <LookAndFeel theme={theme} setTheme={setTheme} />
-      <WeatherSettings />
-
-      <section className="group glass">
-        <div className="row">
-          <span>Privacy</span>
-          <span className="muted">{privacy.pin ? 'PIN is on' : 'No PIN'}</span>
+      <button className="me-card glass" aria-expanded={open === 'you'} onClick={() => toggle('you')}>
+        <span className="me-avatar">{(prefs.name.trim()[0] || 'W').toUpperCase()}</span>
+        <span className="me-text">
+          <strong>{prefs.name.trim() || 'Your name'}</strong>
+          <span className="muted">{prefs.title.trim() || 'Tap to add a name and title'}</span>
+        </span>
+        <i className={'prof-chev' + (open === 'you' ? ' prof-chev-open' : '')} aria-hidden="true">
+          ›
+        </i>
+      </button>
+      {open === 'you' && (
+        <div className="prof-panel group glass">
+          <YouPanel />
         </div>
+      )}
+
+      <div className="prof-tiles">
+        {tiles.map((t) => (
+          <button key={t.id} className={'prof-tile glass' + (open === t.id ? ' prof-tile-on' : '')} aria-expanded={open === t.id} onClick={() => toggle(t.id)}>
+            <span className="prof-ico">{t.icon}</span>
+            <strong>{t.title}</strong>
+            <span className="muted">{t.status}</span>
+          </button>
+        ))}
+      </div>
+      {tiles.some((t) => t.id === open) && (
+        <div className="prof-panel group glass">
+          {open === 'look' && <LookPanel theme={theme} setTheme={setTheme} />}
+          {open === 'speed' && <SpeedPanel />}
+          {open === 'weather' && <WeatherSettings />}
+          {open === 'habits' && <HabitsPanel />}
+        </div>
+      )}
+
+      <ProfRow id="privacy" icon="🔒" title="Privacy" status={privacy.pin ? 'PIN is on' : 'No PIN'} open={open} onToggle={toggle}>
         <p className="muted group-note">
           A PIN keeps casual eyes out, and can hide your Innerwear section. Photos on the phone are not encrypted, and backup files are not locked.
         </p>
@@ -216,12 +275,9 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
             </div>
           </>
         )}
-      </section>
+      </ProfRow>
 
-      <section className="group glass">
-        <div className="row">
-          <span>Backup and restore</span>
-        </div>
+      <ProfRow id="backup" icon="🗂️" title="Backup and restore" status={lastBackup ? 'Last: ' + fmtDate(lastBackup) : 'Never backed up'} open={open} onToggle={toggle}>
         <p className="muted group-note">
           Everything stays on this phone. A backup file holds all your clothes, folders, wear history and outfits.
         </p>
@@ -280,9 +336,9 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
             <p className="muted small">Add skips pieces that are already here. Replace erases what is on this phone first.</p>
           </div>
         )}
-      </section>
+      </ProfRow>
 
-      <section className="group glass">
+      <ProfRow id="storage" icon="💾" title="Storage and about" status={storage.usage != null ? `${mb(storage.usage)} MB · Wardo 0.12.1` : 'Wardo 0.12.1'} open={open} onToggle={toggle}>
         <div className="row">
           <span>Storage</span>
           <span className="muted">{storage.usage != null ? `${mb(storage.usage)} MB used` : 'Unknown'}</span>
@@ -308,9 +364,9 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.12.0</span>
+          <span className="muted">Wardo 0.12.1</span>
         </div>
-      </section>
+      </ProfRow>
     </Screen>
   )
 }

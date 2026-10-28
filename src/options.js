@@ -21,6 +21,7 @@ export const COLORS = [
 export const colorHex = (name) => COLORS.find((c) => c.name === name)?.hex
 
 export const CATEGORIES = {
+  common: ['T-shirt', 'Shirt', 'Jeans', 'Trousers', 'Shorts', 'Track pants', 'Kurta', 'Sweater', 'Hoodie', 'Jacket', 'Shoes', 'Cap', 'Belt', 'Bag', 'Other'],
   winter: ['Jacket', 'Coat', 'Sweater', 'Hoodie', 'Thermal', 'Jeans', 'Trousers', 'Muffler', 'Gloves', 'Other'],
   summer: ['T-shirt', 'Shirt', 'Shorts', 'Jeans', 'Trousers', 'Kurta', 'Track pants', 'Other'],
   inner: ['Vest', 'Briefs', 'Socks', 'Thermal', 'Other'],
