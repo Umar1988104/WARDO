@@ -89,7 +89,7 @@ export default function App() {
   }, [])
 
   async function resetEverything() {
-    await Promise.all([db.items.clear(), db.wears.clear(), db.outfits.clear(), db.folders.clear()])
+    await Promise.all([db.items.clear(), db.wears.clear(), db.outfits.clear(), db.folders.clear(), db.favorites.clear()])
     removePin()
     refreshPrivacy()
     setAppLocked(false)
@@ -105,7 +105,7 @@ export default function App() {
     setWelcome(false)
   }
 
-  const { items, folders, wearInfo, outfitMap, outfits, actions } = useData()
+  const { items, folders, favorites, wearInfo, outfitMap, outfits, actions } = useData()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -252,7 +252,7 @@ export default function App() {
         />
       )}
       {tab === 'planner' && (
-        <Planner items={shownItems} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
+        <Planner items={shownItems} favorites={favorites} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
       )}
       {tab === 'insights' && (
         <Insights items={shownItems} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
@@ -277,6 +277,7 @@ export default function App() {
           item={openItem}
           wear={wearInfo[openItem.id]}
           wornToday={!!wearInfo[openItem.id]?.dates.has(todayKey())}
+          onLaundry={(id, dirty) => actions.setLaundry([id], dirty)}
           onToggleWorn={(...args) => {
             buzz(12)
             return actions.toggleWorn(...args)

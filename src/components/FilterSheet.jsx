@@ -1,7 +1,7 @@
 import Chips from './Chips.jsx'
 import { SECTIONS } from '../sections.js'
 import { COLORS, SEASONS, OCCASIONS, TAGS, SORTS } from '../options.js'
-import { EMPTY_FILTERS } from '../lib/filter.js'
+import { EMPTY_FILTERS, LAUNDRY_OPTIONS } from '../lib/filter.js'
 import { useBackClose } from '../lib/backstack.js'
 
 export default function FilterSheet({ open, onClose, filters, setFilters, sort, setSort, categories, count }) {
@@ -58,6 +58,10 @@ export default function FilterSheet({ open, onClose, filters, setFilters, sort, 
           <div className="field">
             <span>Occasion</span>
             <Chips multi options={OCCASIONS} value={filters.occasion} onChange={set('occasion')} />
+          </div>
+          <div className="field">
+            <span>Laundry</span>
+            <Chips multi options={LAUNDRY_OPTIONS} value={filters.laundry} onChange={set('laundry')} />
           </div>
           <div className="field">
             <span>Fit and condition</span>

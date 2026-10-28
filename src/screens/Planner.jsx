@@ -3,13 +3,15 @@ import Screen from '../components/Screen.jsx'
 import Chips from '../components/Chips.jsx'
 import OutfitPicker from '../components/OutfitPicker.jsx'
 import OutfitStrip from '../components/OutfitStrip.jsx'
+import MixMatch from '../components/MixMatch.jsx'
+import FolderSheet from '../components/FolderSheet.jsx'
 import { OCCASIONS } from '../options.js'
 import { suggestOutfit } from '../lib/suggest.js'
 import { todayKey, monthGrid, dayTag, fromKey } from '../lib/dates.js'
 
 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
-export default function Planner({ items, outfitMap, wearInfo, actions, onOpenItem }) {
+export default function Planner({ items, favorites, outfitMap, wearInfo, actions, onOpenItem }) {
   const today = todayKey()
   const [selected, setSelected] = useState(today)
   const [cursor, setCursor] = useState(() => {
@@ -20,10 +22,16 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
   const [occasion, setOccasion] = useState(null)
   const [proposal, setProposal] = useState(null) // { ids, message }
   const [seed, setSeed] = useState(0)
+  const [mixOpen, setMixOpen] = useState(false)
+  const [namingIds, setNamingIds] = useState(null) // piece ids waiting for a favourite name
 
   const byId = useMemo(() => Object.fromEntries(items.map((i) => [i.id, i])), [items])
   const outfit = outfitMap[selected]
   const outfitItems = outfit ? outfit.itemIds.map((id) => byId[id]).filter(Boolean) : []
+  const favoriteLooks = useMemo(
+    () => favorites.map((f) => ({ ...f, pieces: f.itemIds.map((id) => byId[id]).filter(Boolean) })).filter((f) => f.pieces.length >= 2),
+    [favorites, byId]
+  )
   const proposalItems = proposal ? proposal.ids.map((id) => byId[id]).filter(Boolean) : []
 
   const cells = monthGrid(cursor.y, cursor.m)
@@ -56,7 +64,35 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
     <Screen
       title="Planner"
       overlays={
-          picker && (
+        <>
+          {mixOpen && (
+            <MixMatch
+              items={items}
+              dayLabel={selected === today ? 'today' : fromKey(selected).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+              onClose={() => setMixOpen(false)}
+              onUse={async (ids) => {
+                await actions.saveOutfit(selected, ids, '')
+                setMixOpen(false)
+              }}
+              onSave={async (ids) => setNamingIds(ids)}
+            />
+          )}
+          {namingIds && (
+            <FolderSheet
+              title="Name this favorite"
+              cta="Save favorite"
+              noun="favorite"
+              placeholder="Office Monday, Date night..."
+              maxLength={30}
+              takenNames={favorites.map((f) => f.name)}
+              onClose={() => setNamingIds(null)}
+              onSave={async (name) => {
+                await actions.saveFavorite(name, namingIds)
+                setNamingIds(null)
+              }}
+            />
+          )}
+          {picker && (
             <OutfitPicker
               items={items}
               title={tag || 'Outfit'}
@@ -68,7 +104,8 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
                 setPicker(false)
               }}
             />
-          )
+          )}
+        </>
       }
     >
       <section className="cal glass">
@@ -133,6 +170,9 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
               <button className="pill" onClick={() => setPicker(true)}>
                 Edit
               </button>
+              <button className="pill" onClick={() => setNamingIds(outfit.itemIds.filter((id) => byId[id]))}>
+                Save as favorite
+              </button>
               <button className="pill pill-quiet" onClick={() => actions.deleteOutfit(selected)}>
                 Remove
               </button>
@@ -175,6 +215,45 @@ export default function Planner({ items, outfitMap, wearInfo, actions, onOpenIte
               </div>
             )}
           </>
+        )}
+      </section>
+
+      <section className="favs">
+        <div className="title-row">
+          <h3 className="section-title">Favorite outfits</h3>
+          <button className="link-btn" onClick={() => setMixOpen(true)}>
+            Mix &amp; Match
+          </button>
+        </div>
+        {favoriteLooks.length === 0 ? (
+          <div className="empty empty-slim glass">
+            <p className="muted">Save a planned outfit as a favorite, or build one in Mix &amp; Match.</p>
+            <button className="btn-primary" onClick={() => setMixOpen(true)}>
+              Open Mix &amp; Match
+            </button>
+          </div>
+        ) : (
+          favoriteLooks.map((f) => (
+            <div className="fav glass" key={f.id}>
+              <div className="fav-head">
+                <strong>{f.name}</strong>
+                <button
+                  className="link-btn fav-del"
+                  onClick={() => {
+                    if (window.confirm(`Delete "${f.name}"? Your clothes are kept.`)) actions.deleteFavorite(f.id)
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+              <OutfitStrip items={f.pieces} onOpen={onOpenItem} />
+              <div className="daypanel-actions">
+                <button className="pill pill-accent" onClick={() => actions.saveOutfit(selected, f.pieces.map((p) => p.id), f.name)}>
+                  Use on {selected === today ? 'today' : fromKey(selected).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                </button>
+              </div>
+            </div>
+          ))
         )}
       </section>
     </Screen>

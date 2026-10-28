@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { db } from './db.js'
 import { todayKey } from './lib/dates.js'
 import { makeThumb } from './lib/image.js'
+import { getPrefs } from './lib/prefs.js'
 
 // Keeps the same object for a piece that did not change, so its picture is not
 // reloaded and its card is not redrawn every time something else in the app changes.
@@ -15,6 +16,8 @@ function reconcile(prev, next) {
       o.updatedAt === n.updatedAt &&
       o.folderId === n.folderId &&
       o.section === n.section &&
+      o.laundry === n.laundry &&
+      o.price === n.price &&
       !!o.thumb === !!n.thumb
         ? o
         : n
@@ -32,6 +35,7 @@ export default function useData() {
   const [wears, setWears] = useState([])
   const [outfits, setOutfits] = useState([])
   const [folders, setFolders] = useState([])
+  const [favorites, setFavorites] = useState([])
   const failedThumbs = useRef(new Set())
   const backfilling = useRef(false)
 
@@ -48,16 +52,22 @@ export default function useData() {
         setFolders((await db.folders.toArray()).sort(byName))
         return
       }
-      const [i, w, o, f] = await Promise.all([
+      if (scope === 'favorites') {
+        setFavorites((await db.favorites.toArray()).sort((a, b) => b.createdAt - a.createdAt))
+        return
+      }
+      const [i, w, o, f, fav] = await Promise.all([
         db.items.orderBy('createdAt').reverse().toArray(),
         db.wears.toArray(),
         db.outfits.toArray(),
         db.folders.toArray(),
+        db.favorites.toArray(),
       ])
       setItems((prev) => reconcile(prev, i))
       setWears(w)
       setOutfits(o)
       setFolders(f.sort(byName))
+      setFavorites(fav.sort((a, b) => b.createdAt - a.createdAt))
     } catch (err) {
       console.error('Could not read the wardrobe:', err)
     }
@@ -121,12 +131,24 @@ export default function useData() {
       await db.outfits.update(date, { worn: false })
     }
 
+    // used by "move to laundry after wearing"; reloads the items so cards and filters update
+    async function sendToLaundry(ids) {
+      await db.items.where(':id').anyOf(ids).modify({ laundry: 'dirty', updatedAt: Date.now() })
+      await refresh()
+    }
+
     return {
       refresh,
 
       async deleteItem(id) {
-        await db.transaction('rw', db.items, db.wears, db.outfits, async () => {
+        await db.transaction('rw', db.items, db.wears, db.outfits, db.favorites, async () => {
           await db.items.delete(id)
+          for (const fav of await db.favorites.toArray()) {
+            if (!fav.itemIds.includes(id)) continue
+            const ids = fav.itemIds.filter((x) => x !== id)
+            if (ids.length >= 2) await db.favorites.update(fav.id, { itemIds: ids })
+            else await db.favorites.delete(fav.id)
+          }
           await db.wears.where('itemId').equals(id).delete()
           for (const o of await db.outfits.toArray()) {
             if (!o.itemIds.includes(id)) continue
@@ -166,12 +188,41 @@ export default function useData() {
         await refresh()
       },
 
+      // ----- laundry -----
+      // dirty = true sends the pieces to the laundry, false marks them clean again
+      async setLaundry(ids, dirty) {
+        const now = Date.now()
+        await db.items.where(':id').anyOf(ids).modify({ laundry: dirty ? 'dirty' : null, updatedAt: now })
+        await refresh()
+      },
+
+      async washAll() {
+        const now = Date.now()
+        await db.items.filter((i) => i.laundry === 'dirty').modify({ laundry: null, updatedAt: now })
+        await refresh()
+      },
+
+      // ----- favourite outfits -----
+      async saveFavorite(name, itemIds) {
+        const id = await db.favorites.add({ name: name.trim(), itemIds, createdAt: Date.now() })
+        await refresh('favorites')
+        return id
+      },
+
+      async deleteFavorite(id) {
+        await db.favorites.delete(id)
+        await refresh('favorites')
+      },
+
       // ----- wear tracking (these only reload wear data, not every picture) -----
       // log or un-log that one piece was worn on a day (default: today)
       async toggleWorn(itemId, date = todayKey()) {
         const has = await db.wears.where('[itemId+date]').equals([itemId, date]).first()
         if (has) await db.wears.delete(has.id)
-        else await db.wears.add({ itemId, date })
+        else {
+          await db.wears.add({ itemId, date })
+          if (getPrefs().autoLaundry) await sendToLaundry([itemId])
+        }
         await refresh('wear')
       },
 
@@ -197,6 +248,7 @@ export default function useData() {
           if (!has) await db.wears.add({ itemId, date })
         }
         await db.outfits.update(date, { worn: true })
+        if (getPrefs().autoLaundry) await sendToLaundry(o.itemIds)
         await refresh('wear')
       },
 
@@ -207,5 +259,5 @@ export default function useData() {
     }
   }, [refresh])
 
-  return { items, folders, wearInfo, outfitMap, outfits, actions }
+  return { items, folders, favorites, wearInfo, outfitMap, outfits, actions }
 }

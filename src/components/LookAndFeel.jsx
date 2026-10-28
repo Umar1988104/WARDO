@@ -77,7 +77,7 @@ export default function LookAndFeel({ theme, setTheme }) {
           <span>Theme pack</span>
           <span className="muted">{PACKS[p.pack]?.label}</span>
         </div>
-        <div className="swatches" role="radiogroup" aria-label="Theme pack">
+        <div className="look-swatches" role="radiogroup" aria-label="Theme pack">
           {Object.entries(PACKS).map(([id, pack]) => (
             <button
               key={id}
@@ -96,7 +96,7 @@ export default function LookAndFeel({ theme, setTheme }) {
           <span>Accent colour</span>
           <span className="muted">{p.accent ? p.accent : 'Pack colour'}</span>
         </div>
-        <div className="swatches" role="radiogroup" aria-label="Accent colour">
+        <div className="look-swatches" role="radiogroup" aria-label="Accent colour">
           {ACCENTS.map((c) => (
             <button
               key={c}
@@ -142,6 +142,27 @@ export default function LookAndFeel({ theme, setTheme }) {
         </div>
         <Segmented options={BLUR} value={p.blur} onChange={(v) => setPrefs({ blur: v })} />
         <Switch label="Moving background" hint="Slow drifting colour clouds" on={p.liveBg} onChange={(v) => setPrefs({ liveBg: v })} />
+      </section>
+
+      <section className="group glass">
+        <Switch
+          label="Laundry after wearing"
+          hint="Pieces you wear go to the laundry until you mark them clean"
+          on={p.autoLaundry}
+          onChange={(v) => setPrefs({ autoLaundry: v })}
+        />
+        <div className="row">
+          <span>Currency symbol</span>
+          <input
+            className="mini-input"
+            type="text"
+            value={p.currency}
+            maxLength={3}
+            aria-label="Currency symbol"
+            autoComplete="off"
+            onChange={(e) => setPrefs({ currency: e.target.value })}
+          />
+        </div>
       </section>
 
       <section className="group glass">

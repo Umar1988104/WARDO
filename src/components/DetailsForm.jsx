@@ -1,10 +1,12 @@
 import Chips from './Chips.jsx'
+import { usePrefs } from '../lib/prefs.js'
 import { CATEGORIES, ALL_CATEGORIES, COLORS, SEASONS, OCCASIONS, TAGS } from '../options.js'
 
 // Optional details shared by the Add and Edit screens.
-// value: { category, color, season, occasions[], tags[], notes }
+// value: { category, color, season, occasions[], tags[], notes, price }
 export default function DetailsForm({ section, value, onChange }) {
   const categories = CATEGORIES[section] || ALL_CATEGORIES
+  const { currency } = usePrefs()
 
   return (
     <div className="details">
@@ -44,6 +46,22 @@ export default function DetailsForm({ section, value, onChange }) {
         <span>Fit and condition</span>
         <Chips multi options={TAGS} value={value.tags} onChange={(v) => onChange({ tags: v })} />
       </div>
+
+      <label className="field">
+        <span>Price (optional, to see cost per wear)</span>
+        <div className="price-input">
+          <i aria-hidden="true">{currency}</i>
+          <input
+            type="text"
+            inputMode="decimal"
+            maxLength={9}
+            value={value.price ?? ''}
+            placeholder="0"
+            autoComplete="off"
+            onChange={(e) => onChange({ price: e.target.value.replace(/[^0-9.]/g, '') })}
+          />
+        </div>
+      </label>
 
       <label className="field">
         <span>Notes</span>

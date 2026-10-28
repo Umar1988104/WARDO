@@ -159,7 +159,7 @@
   color: var(--text);
   font: inherit;
 }
-.swatches {
+.look-swatches {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -197,4 +197,178 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
+}
+
+/* =========================================================
+   v0.11: laundry, price, favorites, Mix & Match
+   ========================================================= */
+.stats {
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+}
+
+.price-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.price-input i {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--muted, inherit);
+}
+.mini-input {
+  width: 72px;
+  height: 36px;
+  padding: 0 10px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-solid);
+  color: var(--text);
+  font: inherit;
+}
+
+.item-badge-laundry {
+  color: #fff;
+  background: #3b82c4;
+  border-color: transparent;
+}
+.pk-dirty .pk-thumb img {
+  opacity: 0.55;
+}
+
+.laundry-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 22px;
+}
+.laundry-card > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.laundry-card span {
+  font-size: 13px;
+}
+.laundry-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+.results-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cpw {
+  text-align: right;
+}
+
+.selbar {
+  gap: 10px;
+  align-items: center;
+}
+.selbar .btn-primary {
+  flex: 1;
+  width: auto;
+}
+.selbar-pill {
+  flex: none;
+  margin-top: 6px;
+  height: 48px;
+}
+
+/* favorite outfits */
+.favs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-radius: 22px;
+}
+.fav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.fav-del {
+  font-size: 13px;
+}
+.fav .othumb {
+  width: 64px;
+  height: 64px;
+}
+
+/* Mix & Match */
+.mixmatch {
+  z-index: 62;
+}
+.mm-preview {
+  padding: 14px;
+  border-radius: 24px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.mm-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mm-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.mm-track::-webkit-scrollbar {
+  display: none;
+}
+.mm-card {
+  flex: none;
+  width: 92px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-radius: 18px;
+  scroll-snap-align: start;
+  background: var(--glass-solid);
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+.mm-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.mm-none {
+  font-weight: 650;
+  color: var(--muted, inherit);
+}
+.mm-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.mm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+.center {
+  text-align: center;
 }

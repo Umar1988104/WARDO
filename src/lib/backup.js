@@ -9,7 +9,7 @@ import { db } from '../db.js'
 // so saving and restoring stay light even for a big wardrobe.
 
 const MAGIC = 'WARDOBK1'
-const APP_VERSION = '0.10.0'
+const APP_VERSION = '0.11.0'
 const LAST_KEY = 'wardo-last-backup'
 
 export function getLastBackup() {
@@ -30,11 +30,12 @@ function setLastBackup() {
 }
 
 export async function buildBackup() {
-  const [items, folders, wears, outfits] = await Promise.all([
+  const [items, folders, wears, outfits, favorites] = await Promise.all([
     db.items.toArray(),
     db.folders.toArray(),
     db.wears.toArray(),
     db.outfits.toArray(),
+    db.favorites.toArray(),
   ])
 
   const parts = []
@@ -65,6 +66,7 @@ export async function buildBackup() {
     folders,
     wears,
     outfits,
+    favorites,
     blobs: table,
   }
   const json = new TextEncoder().encode(JSON.stringify(meta))
@@ -141,17 +143,19 @@ export async function readBackup(file) {
     folders: meta.folders || [],
     wears: meta.wears || [],
     outfits: meta.outfits || [],
+    favorites: meta.favorites || [], // older backups have none
   }
 }
 
 // Replace everything on this phone with the backup. All or nothing.
 export async function restoreReplace(data) {
-  await db.transaction('rw', db.items, db.wears, db.outfits, db.folders, async () => {
-    await Promise.all([db.items.clear(), db.wears.clear(), db.outfits.clear(), db.folders.clear()])
+  await db.transaction('rw', db.items, db.wears, db.outfits, db.folders, db.favorites, async () => {
+    await Promise.all([db.items.clear(), db.wears.clear(), db.outfits.clear(), db.folders.clear(), db.favorites.clear()])
     await db.folders.bulkAdd(data.folders)
     await db.items.bulkAdd(data.items)
     await db.wears.bulkAdd(data.wears)
     await db.outfits.bulkAdd(data.outfits)
+    await db.favorites.bulkAdd(data.favorites)
   })
   return { added: data.items.length, skipped: 0 }
 }
@@ -161,7 +165,7 @@ export async function restoreReplace(data) {
 export async function restoreMerge(data) {
   let added = 0
   let skipped = 0
-  await db.transaction('rw', db.items, db.wears, db.outfits, db.folders, async () => {
+  await db.transaction('rw', db.items, db.wears, db.outfits, db.folders, db.favorites, async () => {
     const existing = await db.items.toArray()
     const known = new Map(existing.map((i) => [`${i.createdAt}|${i.name}`, i.id]))
 
@@ -197,6 +201,16 @@ export async function restoreMerge(data) {
       if (await db.outfits.get(o.date)) continue
       const itemIds = o.itemIds.map((x) => itemMap.get(x)).filter((x) => x != null)
       if (itemIds.length) await db.outfits.put({ ...o, itemIds })
+    }
+
+    // favourite outfits: skip the ones already here (same name and same pieces)
+    const haveFavs = await db.favorites.toArray()
+    for (const f of data.favorites) {
+      const itemIds = f.itemIds.map((x) => itemMap.get(x)).filter((x) => x != null)
+      if (itemIds.length < 2) continue
+      const key = [...itemIds].sort().join(',')
+      if (haveFavs.some((h) => h.name === f.name && [...h.itemIds].sort().join(',') === key)) continue
+      await db.favorites.add({ name: f.name, itemIds, createdAt: f.createdAt })
     }
   })
   return { added, skipped }

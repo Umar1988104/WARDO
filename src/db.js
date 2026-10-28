@@ -24,3 +24,13 @@ db.version(3).stores({
   // { id, name, section, createdAt }
   folders: '++id, section',
 })
+
+// v0.11: favourite outfits (saved looks, not tied to a day). { id, name, itemIds[], createdAt }
+// Laundry status and price are plain extra fields on items, so they need no new index.
+db.version(4).stores({
+  items: '++id, section, folderId, createdAt',
+  wears: '++id, itemId, date, [itemId+date]',
+  outfits: 'date',
+  folders: '++id, section',
+  favorites: '++id, createdAt',
+})

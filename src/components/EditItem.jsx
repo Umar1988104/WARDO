@@ -5,6 +5,7 @@ import SectionPicker from './SectionPicker.jsx'
 import DetailsForm from './DetailsForm.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
+import { parsePrice } from '../lib/money.js'
 import { useBackClose } from '../lib/backstack.js'
 
 export default function EditItem({ item, folders, actions, onClose, onSaved }) {
@@ -18,6 +19,7 @@ export default function EditItem({ item, folders, actions, onClose, onSaved }) {
     occasions: item.occasions || [],
     tags: item.tags || [],
     notes: item.notes || '',
+    price: item.price ?? '',
   })
   const [folderId, setFolderId] = useState(item.folderId ?? null)
   const [folderSheet, setFolderSheet] = useState(false)
@@ -53,6 +55,7 @@ export default function EditItem({ item, folders, actions, onClose, onSaved }) {
         occasions: details.occasions,
         tags: details.tags,
         notes: details.notes.trim(),
+        price: parsePrice(details.price),
         updatedAt: Date.now(),
       })
       onSaved()

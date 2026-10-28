@@ -46,12 +46,13 @@ export default function OutfitPicker({ items, initialIds = [], initialNote = '',
               return (
                 <button
                   key={item.id}
-                  className={'pk tone-' + tone + (on ? ' pk-on' : '')}
+                  className={'pk tone-' + tone + (on ? ' pk-on' : '') + (item.laundry === 'dirty' ? ' pk-dirty' : '')}
                   aria-pressed={on}
                   onClick={() => toggle(item.id)}
                 >
                   <span className="pk-thumb">
                     <ItemImage blob={item.thumb || item.front} alt={item.name} />
+                    {item.laundry === 'dirty' && <em className="item-badge item-badge-laundry">Laundry</em>}
                     <i className="pk-check" aria-hidden="true">
                       ✓
                     </i>

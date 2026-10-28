@@ -25,6 +25,7 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
     for (const i of items) map[i.section] = (map[i.section] || 0) + 1
     return map
   }, [items])
+  const dirtyCount = useMemo(() => items.filter((i) => i.laundry === 'dirty').length, [items])
   const categories = useMemo(() => [...new Set(items.map((i) => i.category).filter(Boolean))].sort(), [items])
 
   function leaveResults() {
@@ -111,14 +112,37 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
           </div>
         ) : (
           <>
-            <p className="muted results-count">
-              {results.length} {results.length === 1 ? 'item' : 'items'}
-            </p>
+            <div className="results-row">
+              <p className="muted results-count">
+                {results.length} {results.length === 1 ? 'item' : 'items'}
+              </p>
+              {filters.laundry.length === 1 && filters.laundry[0] === 'In laundry' && (
+                <button className="pill pill-accent" onClick={() => actions.washAll()}>
+                  All washed
+                </button>
+              )}
+            </div>
             <ItemGrid items={results} onOpen={onOpenItem} />
           </>
         )
       ) : (
         <>
+          {dirtyCount > 0 && (
+            <div className="laundry-card glass">
+              <div>
+                <strong>{dirtyCount} in laundry</strong>
+                <span className="muted">Left out of outfit suggestions</span>
+              </div>
+              <div className="laundry-actions">
+                <button className="pill" onClick={() => setFilters({ ...EMPTY_FILTERS, laundry: ['In laundry'] })}>
+                  View
+                </button>
+                <button className="pill pill-accent" onClick={() => actions.washAll()}>
+                  All washed
+                </button>
+              </div>
+            </div>
+          )}
           <h3 className="section-title">Sections</h3>
           <div className="tiles">
             {SECTIONS.map((s) => {

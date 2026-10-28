@@ -306,7 +306,7 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.10.1</span>
+          <span className="muted">Wardo 0.11.0</span>
         </div>
       </section>
     </Screen>

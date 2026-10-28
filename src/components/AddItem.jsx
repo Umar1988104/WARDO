@@ -10,6 +10,7 @@ import SectionPicker from './SectionPicker.jsx'
 import DetailsForm from './DetailsForm.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
+import { parsePrice } from '../lib/money.js'
 import { useBackClose } from '../lib/backstack.js'
 
 const SLOTS = [
@@ -17,7 +18,7 @@ const SLOTS = [
   { id: 'back', label: 'Back (optional)' },
 ]
 
-const EMPTY_DETAILS = { category: null, color: null, season: null, occasions: [], tags: [], notes: '' }
+const EMPTY_DETAILS = { category: null, color: null, season: null, occasions: [], tags: [], notes: '', price: '' }
 
 const CUT_MODES = [
   { value: 'auto', label: 'Auto cutout' },
@@ -217,6 +218,7 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
         occasions: details.occasions,
         tags: details.tags,
         notes: details.notes.trim(),
+        price: parsePrice(details.price),
         folderId: folderId ?? null,
         front,
         back,

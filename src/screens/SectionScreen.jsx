@@ -63,6 +63,14 @@ export default function SectionScreen({ section, folders, folderId, setFolderId,
     await actions.moveItems(ids, target)
   }
 
+  // one tap: send the picked pieces to the laundry, or bring them back if they are all there already
+  const allPickedDirty = picked.size > 0 && [...picked].every((id) => items.find((i) => i.id === id)?.laundry === 'dirty')
+  async function toggleLaundry() {
+    const ids = [...picked]
+    endSelect()
+    await actions.setLaundry(ids, !allPickedDirty)
+  }
+
   async function moveToNew(name) {
     const id = await actions.createFolder(section.id, name)
     await move(id)
@@ -81,6 +89,9 @@ export default function SectionScreen({ section, folders, folderId, setFolderId,
             <div className="selbar glass">
               <button className="btn-primary" disabled={picked.size === 0} onClick={() => setSheet('move')}>
                 Move to folder
+              </button>
+              <button className="pill selbar-pill" disabled={picked.size === 0} onClick={toggleLaundry}>
+                {allPickedDirty ? 'Mark clean' : 'To laundry'}
               </button>
             </div>
           )}

@@ -3,7 +3,18 @@ import { useBackClose } from '../lib/backstack.js'
 
 // Small sheet to name a new folder, or rename / delete an existing one.
 // Mounted only while it is needed, so the name box always starts fresh.
-export default function FolderSheet({ title, initial = '', cta = 'Save', takenNames = [], onClose, onSave, onDelete }) {
+export default function FolderSheet({
+  title,
+  initial = '',
+  cta = 'Save',
+  takenNames = [],
+  noun = 'folder',
+  placeholder = 'Jeans, Gym wear, Formal...',
+  maxLength = 24,
+  onClose,
+  onSave,
+  onDelete,
+}) {
   useBackClose(onClose)
   const [name, setName] = useState(initial)
   const [error, setError] = useState('')
@@ -13,16 +24,16 @@ export default function FolderSheet({ title, initial = '', cta = 'Save', takenNa
   async function submit(e) {
     e.preventDefault()
     const clean = name.trim()
-    if (!clean) return setError('Give the folder a name.')
+    if (!clean) return setError(`Give the ${noun} a name.`)
     if (clean.toLowerCase() !== initial.toLowerCase() && takenNames.some((n) => n.toLowerCase() === clean.toLowerCase())) {
-      return setError('You already have a folder with this name here.')
+      return setError(`You already have a ${noun} with this name.`)
     }
     setBusy(true)
     try {
       await onSave(clean)
     } catch (err) {
       console.error(err)
-      setError('Could not save the folder. Try again.')
+      setError(`Could not save the ${noun}. Try again.`)
       setBusy(false)
     }
   }
@@ -38,10 +49,10 @@ export default function FolderSheet({ title, initial = '', cta = 'Save', takenNa
             <input
               type="text"
               value={name}
-              maxLength={24}
+              maxLength={maxLength}
               autoFocus
               autoComplete="off"
-              placeholder="Jeans, Gym wear, Formal..."
+              placeholder={placeholder}
               onChange={(e) => {
                 setName(e.target.value)
                 setError('')

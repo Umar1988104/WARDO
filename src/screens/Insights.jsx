@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import Screen from '../components/Screen.jsx'
 import Segmented from '../components/Segmented.jsx'
 import ItemCard from '../components/ItemCard.jsx'
+import { costPerWear, formatMoney } from '../lib/money.js'
+import { usePrefs } from '../lib/prefs.js'
 import { daysSince, keyOf, todayKey } from '../lib/dates.js'
 
 const WINDOWS = [
@@ -12,6 +14,7 @@ const WINDOWS = [
 
 export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack }) {
   const [days, setDays] = useState(30)
+  const { currency } = usePrefs()
 
   // a piece counts from the day it was last worn, or the day it was added if never worn
   const forgotten = useMemo(
@@ -37,6 +40,23 @@ export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack 
     [items, wearInfo]
   )
 
+  // money: what the wardrobe cost, which pieces paid off, and which still sit unworn
+  const value = useMemo(() => {
+    const priced = items.filter((i) => i.price != null)
+    const total = priced.reduce((sum, i) => sum + i.price, 0)
+    const paidOff = priced
+      .map((item) => ({ item, cpw: costPerWear(item, wearInfo[item.id]?.count) }))
+      .filter((x) => x.cpw != null)
+      .sort((a, b) => a.cpw - b.cpw)
+      .slice(0, 6)
+    const idle = priced
+      .filter((i) => !wearInfo[i.id]?.count)
+      .sort((a, b) => b.price - a.price)
+      .slice(0, 6)
+    return { count: priced.length, total, paidOff, idle }
+  }, [items, wearInfo])
+  const inLaundry = items.filter((i) => i.laundry === 'dirty').length
+
   const today = todayKey()
   const upcoming = outfits.filter((o) => o.date >= today).length
 
@@ -44,6 +64,7 @@ export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack 
     { label: 'Items', value: items.length },
     { label: 'Outfits planned', value: upcoming },
     { label: 'Not worn lately', value: forgotten.length },
+    ...(inLaundry > 0 ? [{ label: 'In laundry', value: inLaundry }] : []),
   ]
 
   return (
@@ -83,6 +104,40 @@ export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack 
             />
           ))}
         </div>
+      )}
+
+      {value.count > 0 && (
+        <>
+          <h3 className="section-title">Value</h3>
+          <div className="wearbox glass">
+            <div>
+              <strong>{formatMoney(value.total, currency)}</strong>
+              <span className="muted">
+                Across {value.count} priced {value.count === 1 ? 'piece' : 'pieces'}
+              </span>
+            </div>
+          </div>
+          {value.paidOff.length > 0 && (
+            <>
+              <p className="muted small">Lowest cost per wear</p>
+              <div className="recent-row">
+                {value.paidOff.map(({ item, cpw }) => (
+                  <ItemCard key={item.id} item={item} onOpen={onOpenItem} small badge={formatMoney(cpw, currency) + '/wear'} />
+                ))}
+              </div>
+            </>
+          )}
+          {value.idle.length > 0 && (
+            <>
+              <p className="muted small">Paid for but never worn</p>
+              <div className="recent-row">
+                {value.idle.map((item) => (
+                  <ItemCard key={item.id} item={item} onOpen={onOpenItem} small badge={formatMoney(item.price, currency)} />
+                ))}
+              </div>
+            </>
+          )}
+        </>
       )}
 
       {mostWorn.length > 0 && (

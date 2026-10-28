@@ -4,9 +4,14 @@ import { sectionById } from '../sections.js'
 import { colorHex } from '../options.js'
 import { agoText } from '../lib/dates.js'
 import { useBackClose } from '../lib/backstack.js'
+import { costPerWear, formatMoney } from '../lib/money.js'
+import { usePrefs } from '../lib/prefs.js'
 
-export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onClose, onEdit, onDelete }) {
+export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaundry, onClose, onEdit, onDelete }) {
   useBackClose(onClose)
+  const { currency } = usePrefs()
+  const dirty = item.laundry === 'dirty'
+  const cpw = costPerWear(item, wear?.count)
   const [side, setSide] = useState('front')
   const [confirm, setConfirm] = useState(false)
   const section = sectionById(item.section)
@@ -74,6 +79,29 @@ export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onClos
             {wornToday ? 'Worn today ✓ Undo' : 'I wore this today'}
           </button>
         </div>
+
+        <div className="wearbox glass">
+          <div>
+            <strong>{dirty ? 'In the laundry' : 'Clean and ready'}</strong>
+            <span className="muted">{dirty ? 'Left out of outfit suggestions' : 'Send it to the wash after you wear it'}</span>
+          </div>
+          <button className={'pill' + (dirty ? ' pill-accent' : '')} onClick={() => onLaundry(item.id, !dirty)}>
+            {dirty ? 'Mark clean' : 'To laundry'}
+          </button>
+        </div>
+
+        {item.price != null && (
+          <div className="wearbox glass">
+            <div>
+              <strong>{formatMoney(item.price, currency)}</strong>
+              <span className="muted">Price paid</span>
+            </div>
+            <div className="cpw">
+              <strong>{cpw != null ? formatMoney(cpw, currency) : '–'}</strong>
+              <span className="muted">{cpw != null ? 'Cost per wear' : 'Wear it to see cost per wear'}</span>
+            </div>
+          </div>
+        )}
 
         {(item.color || facts.length > 0) && (
           <div className="taglist">

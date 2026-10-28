@@ -42,6 +42,8 @@ function defaults() {
     cols: 2,
     startTab: 'home',
     haptics: true,
+    currency: '₹',
+    autoLaundry: false, // wearing a piece sends it to the laundry
   }
 }
 

@@ -7,6 +7,7 @@ export const EMPTY_FILTERS = {
   occasion: [],
   category: [],
   tags: [],
+  laundry: [],
 }
 
 export function countActive(filters) {
@@ -32,6 +33,8 @@ function matchesQuery(item, query) {
   return q.split(/\s+/).every((word) => haystack.includes(word))
 }
 
+export const LAUNDRY_OPTIONS = ['In laundry', 'Clean']
+const laundryLabel = (item) => (item.laundry === 'dirty' ? 'In laundry' : 'Clean')
 const anyOf = (selected, value) => selected.length === 0 || selected.includes(value)
 const overlaps = (selected, values = []) => selected.length === 0 || selected.some((s) => values.includes(s))
 
@@ -43,6 +46,7 @@ export function applyFilters(items, query, f) {
       anyOf(f.color, item.color) &&
       anyOf(f.season, item.season) &&
       anyOf(f.category, item.category) &&
+      anyOf(f.laundry, laundryLabel(item)) &&
       overlaps(f.occasion, item.occasions) &&
       overlaps(f.tags, item.tags)
   )

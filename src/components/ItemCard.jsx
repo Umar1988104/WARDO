@@ -14,7 +14,9 @@ function ItemCard({ item, onOpen, small, badge, selecting = false, selected = fa
     >
       <span className="item-thumb">
         <ItemImage blob={item.thumb || item.front} alt={item.name} />
-        {badge && <em className="item-badge">{badge}</em>}
+        {(badge || item.laundry === 'dirty') && (
+          <em className={'item-badge' + (!badge ? ' item-badge-laundry' : '')}>{badge || 'Laundry'}</em>
+        )}
         {selecting && (
           <i className={'sel-dot' + (selected ? ' sel-dot-on' : '')} aria-hidden="true">
             {selected ? '✓' : ''}

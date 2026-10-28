@@ -30,6 +30,7 @@ export function seasonForDate(key) {
 
 function usable(item, season, occasion) {
   if (item.section === 'inner') return false
+  if (item.laundry === 'dirty') return false // still in the wash
   const tags = item.tags || []
   if (tags.includes('Torn') || tags.includes('Needs repair')) return false
 
