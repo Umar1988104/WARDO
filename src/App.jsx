@@ -8,8 +8,10 @@ import useData from './useData.js'
 import { todayKey } from './lib/dates.js'
 import { initBackStack } from './lib/backstack.js'
 import { applyPrefs, buzz, getPrefs } from './lib/prefs.js'
+import { useWeather } from './lib/weather.js'
 import TabBar from './components/TabBar.jsx'
 import AddItem from './components/AddItem.jsx'
+import LetGo from './components/LetGo.jsx'
 import ItemDetail from './components/ItemDetail.jsx'
 import EditItem from './components/EditItem.jsx'
 import ThemeToggle, { isDarkNow } from './components/ThemeToggle.jsx'
@@ -48,6 +50,7 @@ export default function App() {
   const [pinPrompt, setPinPrompt] = useState(null) // { then } while asking for the PIN to open innerwear
   const [batchOpen, setBatchOpen] = useState(false)
   const [reviewIds, setReviewIds] = useState(null)
+  const [letGoOpen, setLetGoOpen] = useState(false)
   const awayAt = useRef(0)
   const [welcome, setWelcome] = useState(() => {
     try {
@@ -89,7 +92,7 @@ export default function App() {
   }, [])
 
   async function resetEverything() {
-    await Promise.all([db.items.clear(), db.wears.clear(), db.outfits.clear(), db.folders.clear(), db.favorites.clear()])
+    await Promise.all([db.items.clear(), db.wears.clear(), db.outfits.clear(), db.folders.clear(), db.favorites.clear(), db.trips.clear()])
     removePin()
     refreshPrivacy()
     setAppLocked(false)
@@ -105,7 +108,8 @@ export default function App() {
     setWelcome(false)
   }
 
-  const { items, folders, favorites, wearInfo, outfitMap, outfits, actions } = useData()
+  const { items, folders, favorites, trips, wearInfo, outfitMap, outfits, actions } = useData()
+  const weather = useWeather()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -168,7 +172,15 @@ export default function App() {
   }
 
   // while innerwear is hidden, it is left out of every screen
-  const shownItems = innerHidden ? items.filter((i) => i.section !== 'inner') : items
+  // donated and sold pieces are out of the wardrobe (they stay in the Let go history)
+  const isGone = (i) => i.status === 'donated' || i.status === 'sold'
+  const shownItems = items.filter((i) => !isGone(i) && !(innerHidden && i.section === 'inner'))
+  const goneItems = items.filter((i) => isGone(i) && !(innerHidden && i.section === 'inner'))
+  const letGoCounts = {
+    donate: shownItems.filter((i) => i.status === 'donate').length,
+    sell: shownItems.filter((i) => i.status === 'sell').length,
+    history: goneItems.length,
+  }
 
   useEffect(() => {
     if (!innerHidden) return
@@ -220,6 +232,7 @@ export default function App() {
           wearInfo={wearInfo}
           outfitMap={outfitMap}
           actions={actions}
+          weather={weather}
           onAdd={() => setAddOpen(true)}
           onPlan={() => setTab('planner')}
           onInsights={() => setTab('insights')}
@@ -247,15 +260,17 @@ export default function App() {
           setFolderId={setFolderId}
           onAdd={() => setAddOpen(true)}
           onPlan={() => setTab('planner')}
+          letGo={letGoCounts}
+          onOpenLetGo={() => setLetGoOpen(true)}
           onOpenSettings={() => setTab('settings')}
           onOpenItem={setOpenId}
         />
       )}
       {tab === 'planner' && (
-        <Planner items={shownItems} favorites={favorites} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
+        <Planner items={shownItems} favorites={favorites} trips={trips} weather={weather} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
       )}
       {tab === 'insights' && (
-        <Insights items={shownItems} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
+        <Insights items={shownItems} goneItems={goneItems} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
       )}
       {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} itemCount={items.length} actions={actions} privacy={privacy} onPrivacyChange={refreshPrivacy} />}
 
@@ -278,6 +293,7 @@ export default function App() {
           wear={wearInfo[openItem.id]}
           wornToday={!!wearInfo[openItem.id]?.dates.has(todayKey())}
           onLaundry={(id, dirty) => actions.setLaundry([id], dirty)}
+          onStatus={(id, status) => actions.setStatus([id], status)}
           onToggleWorn={(...args) => {
             buzz(12)
             return actions.toggleWorn(...args)
@@ -287,11 +303,13 @@ export default function App() {
           onDelete={handleDelete}
         />
       )}
-      {editItem && <EditItem item={editItem} folders={folders} actions={actions} onClose={() => setEditId(null)} onSaved={handleEdited} />}
+      {editItem && <EditItem item={editItem} items={shownItems} folders={folders} actions={actions} onClose={() => setEditId(null)} onSaved={handleEdited} />}
       {welcome && <Welcome onDone={finishWelcome} />}
+      {letGoOpen && <LetGo items={[...shownItems, ...goneItems]} actions={actions} onClose={() => setLetGoOpen(false)} />}
       {addOpen && (
         <AddItem
           itemCount={items.length}
+          items={shownItems}
           folders={folders}
           actions={actions}
           defaultSection={tab === 'wardrobe' ? sectionId : null}

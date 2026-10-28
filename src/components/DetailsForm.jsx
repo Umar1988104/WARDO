@@ -4,7 +4,7 @@ import { CATEGORIES, ALL_CATEGORIES, COLORS, SEASONS, OCCASIONS, TAGS } from '..
 
 // Optional details shared by the Add and Edit screens.
 // value: { category, color, season, occasions[], tags[], notes, price }
-export default function DetailsForm({ section, value, onChange }) {
+export default function DetailsForm({ section, value, onChange, similar = 0 }) {
   const categories = CATEGORIES[section] || ALL_CATEGORIES
   const { currency } = usePrefs()
 
@@ -31,6 +31,12 @@ export default function DetailsForm({ section, value, onChange }) {
           ))}
         </div>
       </div>
+
+      {similar >= 2 && (
+        <p className="notice notice-soft">
+          You already have {similar} {value.color.toLowerCase()} {value.category.toLowerCase()} {similar === 1 ? 'piece' : 'pieces'}. Make sure you need another one.
+        </p>
+      )}
 
       <div className="field">
         <span>Season</span>

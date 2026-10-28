@@ -4,14 +4,16 @@ import Chips from '../components/Chips.jsx'
 import OutfitPicker from '../components/OutfitPicker.jsx'
 import OutfitStrip from '../components/OutfitStrip.jsx'
 import MixMatch from '../components/MixMatch.jsx'
+import PackingList from '../components/PackingList.jsx'
 import FolderSheet from '../components/FolderSheet.jsx'
 import { OCCASIONS } from '../options.js'
+import WeatherChip from '../components/WeatherChip.jsx'
 import { suggestOutfit } from '../lib/suggest.js'
 import { todayKey, monthGrid, dayTag, fromKey } from '../lib/dates.js'
 
 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
-export default function Planner({ items, favorites, outfitMap, wearInfo, actions, onOpenItem }) {
+export default function Planner({ items, favorites, trips = [], weather = null, outfitMap, wearInfo, actions, onOpenItem }) {
   const today = todayKey()
   const [selected, setSelected] = useState(today)
   const [cursor, setCursor] = useState(() => {
@@ -23,6 +25,7 @@ export default function Planner({ items, favorites, outfitMap, wearInfo, actions
   const [proposal, setProposal] = useState(null) // { ids, message }
   const [seed, setSeed] = useState(0)
   const [mixOpen, setMixOpen] = useState(false)
+  const [packOpen, setPackOpen] = useState(false)
   const [namingIds, setNamingIds] = useState(null) // piece ids waiting for a favourite name
 
   const byId = useMemo(() => Object.fromEntries(items.map((i) => [i.id, i])), [items])
@@ -38,6 +41,7 @@ export default function Planner({ items, favorites, outfitMap, wearInfo, actions
   const monthLabel = new Date(cursor.y, cursor.m, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
   const fullDate = fromKey(selected).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
   const tag = dayTag(selected)
+  const dayWeather = weather?.days?.[selected] || null
   const canMarkWorn = selected <= today
 
   function shiftMonth(n) {
@@ -52,7 +56,7 @@ export default function Planner({ items, favorites, outfitMap, wearInfo, actions
 
   function propose(nextSeed) {
     setSeed(nextSeed)
-    setProposal(suggestOutfit(items, wearInfo, { date: selected, occasion, seed: nextSeed }))
+    setProposal(suggestOutfit(items, wearInfo, { date: selected, occasion, seed: nextSeed, weather: dayWeather }))
   }
 
   async function useProposal() {
@@ -77,6 +81,7 @@ export default function Planner({ items, favorites, outfitMap, wearInfo, actions
               onSave={async (ids) => setNamingIds(ids)}
             />
           )}
+          {packOpen && <PackingList items={items} wearInfo={wearInfo} trips={trips} actions={actions} onClose={() => setPackOpen(false)} />}
           {namingIds && (
             <FolderSheet
               title="Name this favorite"
@@ -152,6 +157,12 @@ export default function Planner({ items, favorites, outfitMap, wearInfo, actions
           <h2>{fullDate}</h2>
           {tag && <span className="tagchip">{tag}</span>}
         </div>
+        {dayWeather && (
+          <p className="day-weather">
+            <WeatherChip w={dayWeather} stale={weather?.stale} />
+            {dayWeather.rain >= 60 && <span className="muted"> Take an umbrella.</span>}
+          </p>
+        )}
 
         {outfit && outfitItems.length > 0 ? (
           <>
@@ -216,6 +227,18 @@ export default function Planner({ items, favorites, outfitMap, wearInfo, actions
             )}
           </>
         )}
+      </section>
+
+      <section className="trips-card glass">
+        <div>
+          <strong>Packing lists</strong>
+          <span className="muted">
+            {trips.length > 0 ? `${trips.length} saved ${trips.length === 1 ? 'trip' : 'trips'}` : 'Plan what to take on a trip'}
+          </span>
+        </div>
+        <button className="pill pill-accent" onClick={() => setPackOpen(true)}>
+          {trips.length > 0 ? 'Open' : 'New trip'}
+        </button>
       </section>
 
       <section className="favs">

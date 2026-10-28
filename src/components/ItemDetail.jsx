@@ -7,7 +7,7 @@ import { useBackClose } from '../lib/backstack.js'
 import { costPerWear, formatMoney } from '../lib/money.js'
 import { usePrefs } from '../lib/prefs.js'
 
-export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaundry, onClose, onEdit, onDelete }) {
+export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaundry, onStatus, onClose, onEdit, onDelete }) {
   useBackClose(onClose)
   const { currency } = usePrefs()
   const dirty = item.laundry === 'dirty'
@@ -88,6 +88,31 @@ export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaun
           <button className={'pill' + (dirty ? ' pill-accent' : '')} onClick={() => onLaundry(item.id, !dirty)}>
             {dirty ? 'Mark clean' : 'To laundry'}
           </button>
+        </div>
+
+        <div className="wearbox glass">
+          <div>
+            <strong>{item.status === 'donate' ? 'Marked to donate' : item.status === 'sell' ? 'Marked to sell' : 'Letting go of it?'}</strong>
+            <span className="muted">
+              {item.status === 'donate' || item.status === 'sell'
+                ? 'Left out of outfits. Finish it in Let go.'
+                : 'It stays out of outfit suggestions once marked'}
+            </span>
+          </div>
+          {item.status === 'donate' || item.status === 'sell' ? (
+            <button className="pill" onClick={() => onStatus(item.id, null)}>
+              Keep it
+            </button>
+          ) : (
+            <div className="letgo-actions">
+              <button className="pill" onClick={() => onStatus(item.id, 'donate')}>
+                Donate
+              </button>
+              <button className="pill" onClick={() => onStatus(item.id, 'sell')}>
+                Sell
+              </button>
+            </div>
+          )}
         </div>
 
         {item.price != null && (

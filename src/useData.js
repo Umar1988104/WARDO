@@ -17,6 +17,7 @@ function reconcile(prev, next) {
       o.folderId === n.folderId &&
       o.section === n.section &&
       o.laundry === n.laundry &&
+      o.status === n.status &&
       o.price === n.price &&
       !!o.thumb === !!n.thumb
         ? o
@@ -36,6 +37,7 @@ export default function useData() {
   const [outfits, setOutfits] = useState([])
   const [folders, setFolders] = useState([])
   const [favorites, setFavorites] = useState([])
+  const [trips, setTrips] = useState([])
   const failedThumbs = useRef(new Set())
   const backfilling = useRef(false)
 
@@ -52,22 +54,28 @@ export default function useData() {
         setFolders((await db.folders.toArray()).sort(byName))
         return
       }
+      if (scope === 'trips') {
+        setTrips((await db.trips.toArray()).sort((a, b) => b.createdAt - a.createdAt))
+        return
+      }
       if (scope === 'favorites') {
         setFavorites((await db.favorites.toArray()).sort((a, b) => b.createdAt - a.createdAt))
         return
       }
-      const [i, w, o, f, fav] = await Promise.all([
+      const [i, w, o, f, fav, tr] = await Promise.all([
         db.items.orderBy('createdAt').reverse().toArray(),
         db.wears.toArray(),
         db.outfits.toArray(),
         db.folders.toArray(),
         db.favorites.toArray(),
+        db.trips.toArray(),
       ])
       setItems((prev) => reconcile(prev, i))
       setWears(w)
       setOutfits(o)
       setFolders(f.sort(byName))
       setFavorites(fav.sort((a, b) => b.createdAt - a.createdAt))
+      setTrips(tr.sort((a, b) => b.createdAt - a.createdAt))
     } catch (err) {
       console.error('Could not read the wardrobe:', err)
     }
@@ -141,8 +149,12 @@ export default function useData() {
       refresh,
 
       async deleteItem(id) {
-        await db.transaction('rw', db.items, db.wears, db.outfits, db.favorites, async () => {
+        await db.transaction('rw', db.items, db.wears, db.outfits, db.favorites, db.trips, async () => {
           await db.items.delete(id)
+          for (const t of await db.trips.toArray()) {
+            if (!t.itemIds.includes(id)) continue
+            await db.trips.update(t.id, { itemIds: t.itemIds.filter((x) => x !== id), packed: t.packed.filter((x) => x !== id) })
+          }
           for (const fav of await db.favorites.toArray()) {
             if (!fav.itemIds.includes(id)) continue
             const ids = fav.itemIds.filter((x) => x !== id)
@@ -202,6 +214,36 @@ export default function useData() {
         await refresh()
       },
 
+      // ----- letting go -----
+      // status: 'donate' | 'sell' (planned, still in the wardrobe), 'donated' | 'sold' (gone, kept in history), or null (keep it)
+      async setStatus(ids, status, extra = {}) {
+        const gone = status === 'donated' || status === 'sold'
+        await db.items.where(':id').anyOf(ids).modify({
+          status: status || null,
+          soldFor: status === 'sold' ? extra.soldFor ?? null : null,
+          goneAt: gone ? Date.now() : null,
+          updatedAt: Date.now(),
+        })
+        await refresh()
+      },
+
+      // ----- trips and packing lists -----
+      async createTrip(trip) {
+        const id = await db.trips.add({ ...trip, packed: [], createdAt: Date.now() })
+        await refresh('trips')
+        return id
+      },
+
+      async updateTrip(id, patch) {
+        await db.trips.update(id, patch)
+        await refresh('trips')
+      },
+
+      async deleteTrip(id) {
+        await db.trips.delete(id)
+        await refresh('trips')
+      },
+
       // ----- favourite outfits -----
       async saveFavorite(name, itemIds) {
         const id = await db.favorites.add({ name: name.trim(), itemIds, createdAt: Date.now() })
@@ -259,5 +301,5 @@ export default function useData() {
     }
   }, [refresh])
 
-  return { items, folders, favorites, wearInfo, outfitMap, outfits, actions }
+  return { items, folders, favorites, trips, wearInfo, outfitMap, outfits, actions }
 }

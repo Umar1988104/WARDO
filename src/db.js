@@ -34,3 +34,14 @@ db.version(4).stores({
   folders: '++id, section',
   favorites: '++id, createdAt',
 })
+
+// v0.12: packing lists for trips. { id, name, days, climate, occasions[], itemIds[], packed[] (item ids), createdAt }
+// Donate / sell status is stored on the item itself: status, soldFor, goneAt.
+db.version(5).stores({
+  items: '++id, section, folderId, createdAt',
+  wears: '++id, itemId, date, [itemId+date]',
+  outfits: 'date',
+  folders: '++id, section',
+  favorites: '++id, createdAt',
+  trips: '++id, createdAt',
+})

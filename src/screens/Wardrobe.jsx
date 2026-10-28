@@ -9,7 +9,7 @@ import { SECTIONS, sectionById } from '../sections.js'
 import { useBackClose } from '../lib/backstack.js'
 import { EMPTY_FILTERS, applyFilters, countActive, sortItems } from '../lib/filter.js'
 
-export default function Wardrobe({ items, innerHidden = false, folders, wearInfo, outfitMap, actions, sectionId, setSectionId, folderId, setFolderId, onAdd, onPlan, onOpenSettings, onOpenItem }) {
+export default function Wardrobe({ items, innerHidden = false, folders, wearInfo, outfitMap, actions, sectionId, setSectionId, folderId, setFolderId, letGo = null, onOpenLetGo, onAdd, onPlan, onOpenSettings, onOpenItem }) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [sort, setSort] = useState('new')
@@ -141,6 +141,19 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
                   All washed
                 </button>
               </div>
+            </div>
+          )}
+          {letGo && letGo.donate + letGo.sell + letGo.history > 0 && (
+            <div className="laundry-card glass">
+              <div>
+                <strong>Let go</strong>
+                <span className="muted">
+                  {letGo.donate} to donate · {letGo.sell} to sell · {letGo.history} gone
+                </span>
+              </div>
+              <button className="pill" onClick={onOpenLetGo}>
+                Open
+              </button>
             </div>
           )}
           <h3 className="section-title">Sections</h3>

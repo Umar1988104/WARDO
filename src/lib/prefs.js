@@ -44,6 +44,8 @@ function defaults() {
     haptics: true,
     currency: '₹',
     autoLaundry: false, // wearing a piece sends it to the laundry
+    weatherOn: false, // off until the person turns it on: it is the only thing that goes online
+    place: null, // { name, lat, lon }
   }
 }
 

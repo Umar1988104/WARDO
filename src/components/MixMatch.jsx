@@ -20,7 +20,7 @@ export default function MixMatch({ items, dayLabel, onUse, onSave, onClose }) {
   const byRole = useMemo(() => {
     const out = { top: [], layer: [], bottom: [], shoes: [] }
     for (const item of items) {
-      if (item.section === 'inner' || item.laundry === 'dirty') continue
+      if (item.section === 'inner' || item.laundry === 'dirty' || item.status === 'donate' || item.status === 'sell') continue
       const role = ROLE[item.category]
       if (role) out[role].push(item)
     }

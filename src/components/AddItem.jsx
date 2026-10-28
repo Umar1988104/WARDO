@@ -11,6 +11,7 @@ import DetailsForm from './DetailsForm.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
 import { parsePrice } from '../lib/money.js'
+import { similarCount } from '../lib/gaps.js'
 import { useBackClose } from '../lib/backstack.js'
 
 const SLOTS = [
@@ -33,7 +34,7 @@ function loadCutMode() {
   }
 }
 
-export default function AddItem({ itemCount, folders, actions, defaultSection = null, defaultFolderId = null, onClose, onSaved, onBatch }) {
+export default function AddItem({ itemCount, items = [], folders, actions, defaultSection = null, defaultFolderId = null, onClose, onSaved, onBatch }) {
   useBackClose(onClose)
   const cameraRef = useRef(null)
   const galleryRef = useRef(null)
@@ -396,7 +397,7 @@ export default function AddItem({ itemCount, folders, actions, defaultSection = 
             ›
           </span>
         </button>
-        {more && <DetailsForm section={section} value={details} onChange={updateDetails} />}
+        {more && <DetailsForm section={section} value={details} onChange={updateDetails} similar={similarCount(items, details)} />}
 
         <button className="btn-primary btn-wide" disabled={!canSave} onClick={save}>
           {saving ? 'Saving' : 'Save to wardrobe'}

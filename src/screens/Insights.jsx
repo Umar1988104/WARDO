@@ -4,6 +4,7 @@ import Segmented from '../components/Segmented.jsx'
 import ItemCard from '../components/ItemCard.jsx'
 import { costPerWear, formatMoney } from '../lib/money.js'
 import { usePrefs } from '../lib/prefs.js'
+import { analyzeWardrobe } from '../lib/gaps.js'
 import { daysSince, keyOf, todayKey } from '../lib/dates.js'
 
 const WINDOWS = [
@@ -12,7 +13,7 @@ const WINDOWS = [
   { value: 90, label: '90 days' },
 ]
 
-export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack }) {
+export default function Insights({ items, goneItems = [], wearInfo, outfits, onOpenItem, onBack }) {
   const [days, setDays] = useState(30)
   const { currency } = usePrefs()
 
@@ -55,6 +56,10 @@ export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack 
       .slice(0, 6)
     return { count: priced.length, total, paidOff, idle }
   }, [items, wearInfo])
+  const check = useMemo(() => analyzeWardrobe(items), [items])
+  const donated = goneItems.filter((i) => i.status === 'donated').length
+  const sold = goneItems.filter((i) => i.status === 'sold')
+  const earned = sold.reduce((sum, i) => sum + (i.soldFor || 0), 0)
   const inLaundry = items.filter((i) => i.laundry === 'dirty').length
 
   const today = todayKey()
@@ -103,6 +108,52 @@ export default function Insights({ items, wearInfo, outfits, onOpenItem, onBack 
               badge={never ? `Never worn · ${idle}d` : `${idle} days ago`}
             />
           ))}
+        </div>
+      )}
+
+      {items.length > 0 && (
+        <>
+          <h3 className="section-title">Wardrobe check</h3>
+          {check.tooFew && check.duplicates.length === 0 ? (
+            <div className="note glass">
+              <p className="muted">Add a few more pieces (about 6) and Wardo will point out what is missing.</p>
+            </div>
+          ) : check.gaps.length === 0 && check.duplicates.length === 0 ? (
+            <div className="note glass">
+              <p>Nothing missing and no doubles. Your wardrobe looks balanced.</p>
+            </div>
+          ) : (
+            <>
+              {check.gaps.map((g) => (
+                <div key={g.id} className="note glass">
+                  <strong>{g.title}</strong>
+                  <p className="muted">{g.detail}</p>
+                </div>
+              ))}
+              {check.duplicates.map((d) => (
+                <div key={d.id} className="note glass">
+                  <strong>{d.label}</strong>
+                  <p className="muted">Do you need all of them? Good ones to donate or sell: open a piece and tap Donate or Sell.</p>
+                  <div className="recent-row">
+                    {d.items.map((item) => (
+                      <ItemCard key={item.id} item={item} onOpen={onOpenItem} small />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </>
+      )}
+
+      {goneItems.length > 0 && (
+        <div className="wearbox glass">
+          <div>
+            <strong>
+              {donated} donated · {sold.length} sold
+            </strong>
+            <span className="muted">{earned > 0 ? `${formatMoney(earned, currency)} earned. ` : ''}Pieces you let go of</span>
+          </div>
         </div>
       )}
 

@@ -1,21 +1,23 @@
 import { useMemo, useState } from 'react'
 import OutfitStrip from './OutfitStrip.jsx'
+import WeatherChip from './WeatherChip.jsx'
 import { CalendarIcon } from './Icons.jsx'
 import { suggestOutfit } from '../lib/suggest.js'
 import { todayKey } from '../lib/dates.js'
 
 // The big gradient card at the top of the Wardrobe screen.
-export default function TodayCard({ items, outfitMap, wearInfo, actions, onPlan, onOpenItem }) {
+export default function TodayCard({ items, outfitMap, wearInfo, actions, weather = null, onPlan, onOpenItem }) {
   const today = todayKey()
   const outfit = outfitMap[today]
+  const w = weather?.days?.[today] || null
   const [seed, setSeed] = useState(0)
 
   const byId = useMemo(() => Object.fromEntries(items.map((i) => [i.id, i])), [items])
   const planned = outfit ? outfit.itemIds.map((id) => byId[id]).filter(Boolean) : []
 
   const pick = useMemo(
-    () => (outfit ? null : suggestOutfit(items, wearInfo, { date: today, occasion: null, seed })),
-    [outfit, items, wearInfo, today, seed]
+    () => (outfit ? null : suggestOutfit(items, wearInfo, { date: today, occasion: null, seed, weather: w })),
+    [outfit, items, wearInfo, today, seed, w]
   )
   const picked = pick ? pick.ids.map((id) => byId[id]).filter(Boolean) : []
 
@@ -25,6 +27,7 @@ export default function TodayCard({ items, outfitMap, wearInfo, actions, onPlan,
         <div className="hero-text">
           <h2>{outfit.worn ? 'You wore this today' : "Today's outfit"}</h2>
           {outfit.note && <p>{outfit.note}</p>}
+          <WeatherChip w={w} stale={weather?.stale} />
         </div>
         <OutfitStrip items={planned} onOpen={onOpenItem} />
         <div className="hero-actions">
@@ -51,7 +54,9 @@ export default function TodayCard({ items, outfitMap, wearInfo, actions, onPlan,
       <section className="hero">
         <div className="hero-text">
           <h2>Today's pick</h2>
-          <p>{pick.message || 'Made from pieces you have not worn in a while.'}</p>
+          <p>{pick.message || (w ? 'Picked for today’s weather, from pieces you have not worn lately.' : 'Made from pieces you have not worn in a while.')}</p>
+          <WeatherChip w={w} stale={weather?.stale} />
+          {w && w.rain >= 60 && <p>Rain is likely. Take an umbrella.</p>}
         </div>
         <OutfitStrip items={picked} onOpen={onOpenItem} />
         <div className="hero-actions">

@@ -6,9 +6,10 @@ import DetailsForm from './DetailsForm.jsx'
 import FolderField from './FolderField.jsx'
 import FolderSheet from './FolderSheet.jsx'
 import { parsePrice } from '../lib/money.js'
+import { similarCount } from '../lib/gaps.js'
 import { useBackClose } from '../lib/backstack.js'
 
-export default function EditItem({ item, folders, actions, onClose, onSaved }) {
+export default function EditItem({ item, items = [], folders, actions, onClose, onSaved }) {
   useBackClose(onClose)
   const [name, setName] = useState(item.name || '')
   const [section, setSection] = useState(item.section)
@@ -91,7 +92,7 @@ export default function EditItem({ item, folders, actions, onClose, onSaved }) {
 
         <FolderField section={section} folders={folders} value={folderId} onChange={setFolderId} onNew={() => setFolderSheet(true)} />
 
-        <DetailsForm section={section} value={details} onChange={update} />
+        <DetailsForm section={section} value={details} onChange={update} similar={similarCount(items, details, item.id)} />
 
         {error && <p className="notice">{error}</p>}
       </div>

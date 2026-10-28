@@ -6,6 +6,7 @@ import { sectionById } from '../sections.js'
 // when something unrelated changes (like marking another piece as worn).
 function ItemCard({ item, onOpen, small, badge, selecting = false, selected = false }) {
   const tone = sectionById(item.section)?.tone || 'blue'
+  const tag = item.status === 'donate' ? 'To donate' : item.status === 'sell' ? 'To sell' : item.laundry === 'dirty' ? 'Laundry' : null
   return (
     <button
       className={'item-card tone-' + tone + (small ? ' item-card-small' : '') + (selected ? ' item-card-on' : '')}
@@ -14,9 +15,7 @@ function ItemCard({ item, onOpen, small, badge, selecting = false, selected = fa
     >
       <span className="item-thumb">
         <ItemImage blob={item.thumb || item.front} alt={item.name} />
-        {(badge || item.laundry === 'dirty') && (
-          <em className={'item-badge' + (!badge ? ' item-badge-laundry' : '')}>{badge || 'Laundry'}</em>
-        )}
+        {(badge || tag) && <em className={'item-badge' + (!badge ? ' item-badge-laundry' : '')}>{badge || tag}</em>}
         {selecting && (
           <i className={'sel-dot' + (selected ? ' sel-dot-on' : '')} aria-hidden="true">
             {selected ? '✓' : ''}

@@ -21,6 +21,14 @@ function hash(str) {
   return h >>> 0
 }
 
+// the day's forecast decides the season when weather is on
+export function seasonFromWeather(w) {
+  if (!w) return null
+  if (w.max <= 18 || w.min <= 10) return 'Winter'
+  if (w.max <= 27) return 'Mid-season'
+  return 'Summer'
+}
+
 export function seasonForDate(key) {
   const m = Number(key.slice(5, 7))
   if ([11, 12, 1, 2].includes(m)) return 'Winter'
@@ -28,9 +36,11 @@ export function seasonForDate(key) {
   return 'Summer'
 }
 
-function usable(item, season, occasion) {
+// pieces that can go into an outfit or a packing list at all
+export function usable(item, season, occasion) {
   if (item.section === 'inner') return false
   if (item.laundry === 'dirty') return false // still in the wash
+  if (item.status === 'donate' || item.status === 'sell') return false // on its way out
   const tags = item.tags || []
   if (tags.includes('Torn') || tags.includes('Needs repair')) return false
 
@@ -61,9 +71,9 @@ function choose(list, scoreOf, rnd) {
 }
 
 // Rule-based outfit: top + bottom (+ layer on cooler days, + shoes), favouring pieces you haven't worn lately.
-export function suggestOutfit(items, wearInfo, { date, occasion = null, seed = 0 }) {
+export function suggestOutfit(items, wearInfo, { date, occasion = null, seed = 0, weather = null }) {
   const rnd = mulberry32(hash(`${date}:${occasion || ''}:${seed}`))
-  const season = seasonForDate(date)
+  const season = seasonFromWeather(weather) || seasonForDate(date)
   const pool = items.filter((i) => usable(i, season, occasion))
 
   const byRole = (role) => pool.filter((i) => ROLE[i.category] === role)

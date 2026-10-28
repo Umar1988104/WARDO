@@ -35,7 +35,7 @@ function greeting() {
   return 'Good evening'
 }
 
-export default function Home({ items, innerHidden = false, onReview, wearInfo, outfitMap, actions, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
+export default function Home({ items, innerHidden = false, onReview, wearInfo, outfitMap, actions, weather = null, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
   const prefs = usePrefs()
   const who = prefs.name.trim()
   const stats = useMemo(() => {
@@ -109,7 +109,7 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, o
 
       <BackupNudge count={items.length} onOpen={onOpenSettings} />
 
-      <TodayCard items={items} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onPlan={onPlan} onOpenItem={onOpenItem} />
+      <TodayCard items={items} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} weather={weather} onPlan={onPlan} onOpenItem={onOpenItem} />
 
       <h3 className="section-title">Quick actions</h3>
       <div className="quick-row">

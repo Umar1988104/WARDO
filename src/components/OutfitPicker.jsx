@@ -5,7 +5,7 @@ import { SECTIONS, sectionById } from '../sections.js'
 import { useBackClose } from '../lib/backstack.js'
 
 // Full-screen picker: tap pieces to put them in an outfit.
-export default function OutfitPicker({ items, initialIds = [], initialNote = '', title, onClose, onSave }) {
+export default function OutfitPicker({ items, initialIds = [], initialNote = '', title, saveLabel = 'Save outfit', noNote = false, onClose, onSave }) {
   useBackClose(onClose)
   const [ids, setIds] = useState(initialIds)
   const [note, setNote] = useState(initialNote)
@@ -64,6 +64,7 @@ export default function OutfitPicker({ items, initialIds = [], initialNote = '',
           </div>
         )}
 
+        {!noNote && (
         <label className="field">
           <span>Note (optional)</span>
           <input
@@ -75,9 +76,10 @@ export default function OutfitPicker({ items, initialIds = [], initialNote = '',
             onChange={(e) => setNote(e.target.value)}
           />
         </label>
+        )}
 
         <button className="btn-primary btn-wide" disabled={ids.length === 0} onClick={() => onSave(ids, note.trim())}>
-          Save outfit ({ids.length})
+          {saveLabel} ({ids.length})
         </button>
       </div>
     </div>

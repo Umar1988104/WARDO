@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Screen from '../components/Screen.jsx'
 import LookAndFeel from '../components/LookAndFeel.jsx'
+import WeatherSettings from '../components/WeatherSettings.jsx'
 import Switch from '../components/Switch.jsx'
 import { PinFlow } from '../components/PinPad.jsx'
 import { setLockApp, setLockInner } from '../lib/lock.js'
@@ -170,6 +171,7 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
       }
     >
       <LookAndFeel theme={theme} setTheme={setTheme} />
+      <WeatherSettings />
 
       <section className="group glass">
         <div className="row">
@@ -306,7 +308,7 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.11.0</span>
+          <span className="muted">Wardo 0.12.0</span>
         </div>
       </section>
     </Screen>
