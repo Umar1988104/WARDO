@@ -122,7 +122,7 @@ export default function Wardrobe({ items, innerHidden = false, folders, wearInfo
                 </button>
               )}
             </div>
-            <ItemGrid items={results} onOpen={onOpenItem} />
+            <ItemGrid items={results} onOpen={onOpenItem} viewToggle />
           </>
         )
       ) : (

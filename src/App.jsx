@@ -108,18 +108,21 @@ export default function App() {
     setWelcome(false)
   }
 
-  const { items, folders, favorites, trips, wearInfo, outfitMap, outfits, actions } = useData()
+  const { items, folders, favorites, trips, wears, wearInfo, outfitMap, outfits, actions } = useData()
   const weather = useWeather()
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
+    // AMOLED is a dark theme with pure black: data-theme stays "dark" and data-amoled switches on the black styles
+    document.documentElement.dataset.theme = theme === 'amoled' ? 'dark' : theme
+    document.documentElement.dataset.amoled = theme === 'amoled' ? 'on' : 'off'
     try {
       localStorage.setItem('wardo-theme', theme)
+      if (theme === 'dark' || theme === 'amoled') localStorage.setItem('wardo-last-dark', theme)
     } catch {
       /* storage can be unavailable; the theme just won't persist */
     }
     // keep the browser / Android status bar colour in sync with the chosen theme
-    const colour = isDarkNow(theme) ? '#111715' : '#f7f3ee'
+    const colour = theme === 'amoled' ? '#000000' : isDarkNow(theme) ? '#111715' : '#f7f3ee'
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
       m.removeAttribute('media')
       m.setAttribute('content', colour)
@@ -270,7 +273,7 @@ export default function App() {
         <Planner items={shownItems} favorites={favorites} trips={trips} weather={weather} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} onOpenItem={setOpenId} />
       )}
       {tab === 'insights' && (
-        <Insights items={shownItems} goneItems={goneItems} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
+        <Insights items={shownItems} goneItems={goneItems} wears={wears} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
       )}
       {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} itemCount={items.length} actions={actions} privacy={privacy} onPrivacyChange={refreshPrivacy} />}
 
@@ -292,6 +295,9 @@ export default function App() {
           item={openItem}
           wear={wearInfo[openItem.id]}
           wornToday={!!wearInfo[openItem.id]?.dates.has(todayKey())}
+          items={shownItems}
+          wearInfo={wearInfo}
+          onOpenOther={setOpenId}
           onLaundry={(id, dirty) => actions.setLaundry([id], dirty)}
           onStatus={(id, status) => actions.setStatus([id], status)}
           onToggleWorn={(...args) => {

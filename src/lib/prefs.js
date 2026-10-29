@@ -43,6 +43,7 @@ function defaults() {
     startTab: 'home',
     haptics: true,
     currency: '₹',
+    view: 'grid', // 'grid' or 'rail' (hanger rails)
     autoLaundry: false, // wearing a piece sends it to the laundry
     weatherOn: false, // off until the person turns it on: it is the only thing that goes online
     place: null, // { name, lat, lon }
@@ -82,15 +83,20 @@ const rgba = (c, a) => {
 
 const VAR_KEYS = ['--accent', '--accent-2', '--accent-grad', '--accent-deep', '--mint', '--hero-grad', '--blob-a', '--blob-b', '--blob-c', '--mesh']
 
-function themeVars(p, dark) {
+function themeVars(p, dark, amoled) {
   const pack = PACKS[p.pack] || PACKS.closetly
-  if (pack === PACKS.closetly && !p.accent) return null // the stylesheet already has these
+  if (pack === PACKS.closetly && !p.accent && !amoled) return null // the stylesheet already has these
 
   const gb = p.accent || pack.light // base for gradients (same in light and dark, like the original)
   const base = dark ? (p.accent ? mix(p.accent, '#ffffff', 0.35) : pack.dark) : gb
   const blobs = [...pack.blobs]
   if (p.accent) blobs[1] = mix(p.accent, '#ffffff', 0.5)
   const blob = (c, i) => (dark ? rgba(mix(c, '#000000', 0.35), [0.35, 0.4, 0.35][i]) : rgba(c, [0.65, 0.6, 0.5][i]))
+
+  // AMOLED: no moving colour clouds, just a faint glow of the accent on pure black
+  const glow = amoled
+    ? { '--blob-a': rgba(base, 0.16), '--blob-b': rgba(mix(base, '#ffffff', 0.3), 0.07), '--blob-c': 'rgba(0, 0, 0, 0)' }
+    : {}
 
   return {
     '--accent': base,
@@ -105,19 +111,27 @@ function themeVars(p, dark) {
     '--mesh': dark
       ? 'none'
       : `radial-gradient(60% 40% at 0% 0%, ${rgba(blobs[0], 0.55)}, transparent 70%), radial-gradient(55% 38% at 100% 22%, ${rgba(blobs[1], 0.55)}, transparent 70%), radial-gradient(60% 42% at 20% 100%, ${rgba(blobs[2], 0.45)}, transparent 70%)`,
+    ...glow,
   }
 }
 
-function isDark() {
-  let t = document.documentElement.dataset.theme
-  if (!t) {
-    try {
-      t = localStorage.getItem('wardo-theme') || 'auto'
-    } catch {
-      t = 'auto'
-    }
+function storedTheme() {
+  try {
+    return localStorage.getItem('wardo-theme') || 'auto'
+  } catch {
+    return 'auto'
   }
-  if (t === 'dark') return true
+}
+
+// 'amoled' is a dark theme with pure black; the page gets data-theme="dark" plus data-amoled="on"
+function isAmoled() {
+  const el = document.documentElement
+  return el.dataset.amoled ? el.dataset.amoled === 'on' : storedTheme() === 'amoled'
+}
+
+function isDark() {
+  const t = document.documentElement.dataset.theme || storedTheme()
+  if (t === 'dark' || t === 'amoled') return true
   if (t === 'light') return false
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
@@ -128,12 +142,17 @@ const listeners = new Set()
 // Writes the settings onto the page. Safe to call as often as needed.
 export function applyPrefs() {
   const el = document.documentElement
+  // first paint: apply the saved AMOLED look before the app has started, so there is no flash of another theme
+  if (!el.dataset.amoled && storedTheme() === 'amoled') {
+    el.dataset.amoled = 'on'
+    el.dataset.theme = 'dark'
+  }
   el.dataset.motion = prefs.motion
   el.dataset.blur = prefs.blur
   el.dataset.bg = prefs.liveBg ? 'on' : 'off'
   el.dataset.cols = String(prefs.cols)
   for (const k of VAR_KEYS) el.style.removeProperty(k)
-  const vars = themeVars(prefs, isDark())
+  const vars = themeVars(prefs, isDark(), isAmoled())
   if (vars) for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v)
 }
 

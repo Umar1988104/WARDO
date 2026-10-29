@@ -6,6 +6,11 @@ const THEMES = [
   { value: 'auto', label: 'Auto' },
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
+  { value: 'amoled', label: 'AMOLED' },
+]
+const VIEWS = [
+  { value: 'grid', label: 'Grid' },
+  { value: 'rail', label: 'Hanger rail' },
 ]
 const SPEEDS = [
   { value: 'fast', label: 'Fast' },
@@ -73,6 +78,7 @@ export function LookPanel({ theme, setTheme }) {
         <span>Appearance</span>
       </div>
       <Segmented options={THEMES} value={theme} onChange={setTheme} />
+      {theme === 'amoled' && <p className="muted group-note">Pure black with a spotlight glow on your clothes. Easy on the eyes at night and saves battery on OLED screens.</p>}
 
       <div className="row">
         <span>Theme pack</span>
@@ -181,7 +187,11 @@ export function HabitsPanel() {
         />
       </div>
       <div className="row">
-        <span>Grid</span>
+        <span>Wardrobe view</span>
+      </div>
+      <Segmented options={VIEWS} value={p.view} onChange={(v) => setPrefs({ view: v })} />
+      <div className="row">
+        <span>Grid size</span>
       </div>
       <Segmented options={COLS} value={p.cols} onChange={(v) => setPrefs({ cols: v })} />
       <div className="row">

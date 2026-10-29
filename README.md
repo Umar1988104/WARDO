@@ -25,7 +25,9 @@ Free, private and offline-first. No account, no server, no ads. Your photos and 
 - **Donate or sell** pieces you no longer wear, with a history.
 - **Optional weather** (off by default) to suggest lighter or warmer pieces.
 - **Private by design:** PIN lock, a hidden Innerwear section, and backup files you own.
-- **Fast on any phone:** Fast, Balanced and Full speed modes, plus theme packs and accent colours.
+- **Wardrobe Wrapped:** a shareable picture of your month in clothes, made on your phone.
+- **Colour match** for every piece, and a **hanger rail** view of your wardrobe.
+- **Fast on any phone:** Fast, Balanced and Full speed modes, an **AMOLED** black theme, theme packs and accent colours.
 
 ## Privacy
 

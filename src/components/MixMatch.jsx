@@ -3,6 +3,7 @@ import ItemImage from './ItemImage.jsx'
 import OutfitStrip from './OutfitStrip.jsx'
 import { ROLE } from '../options.js'
 import { useBackClose } from '../lib/backstack.js'
+import { rateColors } from '../lib/harmony.js'
 
 const ROWS = [
   { role: 'top', label: 'Top', optional: false },
@@ -38,6 +39,7 @@ export default function MixMatch({ items, dayLabel, onUse, onSave, onClose }) {
   const chosen = ROWS.map((r) => items.find((i) => i.id === pick[r.role])).filter(Boolean)
   const ids = chosen.map((i) => i.id)
   const ready = ids.length >= 2
+  const verdict = rateColors(chosen.map((i) => i.color))
 
   function shuffle() {
     const next = {}
@@ -87,6 +89,7 @@ export default function MixMatch({ items, dayLabel, onUse, onSave, onClose }) {
             <section className="mm-preview glass">
               {chosen.length > 0 ? <OutfitStrip items={chosen} /> : <p className="muted center">Tap pieces below to build a look.</p>}
               {!ready && chosen.length > 0 && <p className="muted small center">Pick at least two pieces.</p>}
+              {verdict && <p className={'mm-verdict mm-verdict-' + verdict.tone}>Colours: {verdict.label}</p>}
             </section>
 
             {ROWS.map((r) => {

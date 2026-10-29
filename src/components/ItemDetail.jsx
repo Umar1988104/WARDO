@@ -6,12 +6,16 @@ import { agoText } from '../lib/dates.js'
 import { useBackClose } from '../lib/backstack.js'
 import { costPerWear, formatMoney } from '../lib/money.js'
 import { usePrefs } from '../lib/prefs.js'
+import { harmonyFor, pairsFor } from '../lib/harmony.js'
+import ItemCard from './ItemCard.jsx'
 
-export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaundry, onStatus, onClose, onEdit, onDelete }) {
+export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaundry, onStatus, items = [], wearInfo = {}, onOpenOther, onClose, onEdit, onDelete }) {
   useBackClose(onClose)
   const { currency } = usePrefs()
   const dirty = item.laundry === 'dirty'
   const cpw = costPerWear(item, wear?.count)
+  const harmony = harmonyFor(item.color)
+  const pairs = pairsFor(item, items, wearInfo)
   const [side, setSide] = useState('front')
   const [confirm, setConfirm] = useState(false)
   const section = sectionById(item.section)
@@ -89,6 +93,32 @@ export default function ItemDetail({ item, wear, wornToday, onToggleWorn, onLaun
             {dirty ? 'Mark clean' : 'To laundry'}
           </button>
         </div>
+
+        {harmony.length > 0 && (
+          <section className="harmony glass">
+            <h3 className="section-title">Goes well with</h3>
+            {harmony.map((g) => (
+              <div key={g.kind} className="harmony-group">
+                <span className="muted">{g.kind}</span>
+                <div className="harmony-dots">
+                  {g.colors.map((c) => (
+                    <i key={c} className="harmony-dot" style={{ background: colorHex(c) }} title={c} />
+                  ))}
+                </div>
+              </div>
+            ))}
+            {pairs.length > 0 && (
+              <>
+                <span className="muted">From your wardrobe</span>
+                <div className="recent-row">
+                  {pairs.map((p) => (
+                    <ItemCard key={p.id} item={p} onOpen={onOpenOther} small />
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+        )}
 
         <div className="wearbox glass">
           <div>

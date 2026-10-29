@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+- **AMOLED theme:** pure black with thin glass, still clouds instead of moving ones, and a spotlight glow behind every cutout. Pick it in Profile > Look > Appearance. The dark theme also got a softer spotlight.
+- **Wardrobe Wrapped:** a shareable picture of your month, year or all time (most-worn piece, wears, streak, colours, best value, money earned). Innerwear is never included. Open it from Insights.
+- **Colour match:** every piece shows colours that go with it, plus matching pieces from your wardrobe. Mix & Match now gives a colour verdict.
+- **Hanger rail:** see your wardrobe as clothes hanging on rails, one per category. Switch with Grid / Rail in the Wardrobe, or in Profile > Wardrobe.
+
 ## 1.0.0
 - Release. Touch up the front or back photo of an existing piece from Edit.
 - Crash screen with a Reload button instead of a blank page.

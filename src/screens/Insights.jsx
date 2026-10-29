@@ -5,6 +5,7 @@ import ItemCard from '../components/ItemCard.jsx'
 import { costPerWear, formatMoney } from '../lib/money.js'
 import { usePrefs } from '../lib/prefs.js'
 import { analyzeWardrobe } from '../lib/gaps.js'
+import Wrapped from '../components/Wrapped.jsx'
 import { daysSince, keyOf, todayKey } from '../lib/dates.js'
 
 const WINDOWS = [
@@ -13,8 +14,9 @@ const WINDOWS = [
   { value: 90, label: '90 days' },
 ]
 
-export default function Insights({ items, goneItems = [], wearInfo, outfits, onOpenItem, onBack }) {
+export default function Insights({ items, goneItems = [], wears = [], wearInfo, outfits, onOpenItem, onBack }) {
   const [days, setDays] = useState(30)
+  const [wrappedOpen, setWrappedOpen] = useState(false)
   const { currency } = usePrefs()
 
   // a piece counts from the day it was last worn, or the day it was added if never worn
@@ -73,7 +75,20 @@ export default function Insights({ items, goneItems = [], wearInfo, outfits, onO
   ]
 
   return (
-    <Screen title="Insights" back={onBack ? { label: 'Home', onClick: onBack } : undefined}>
+    <Screen
+      title="Insights"
+      back={onBack ? { label: 'Home', onClick: onBack } : undefined}
+      overlays={wrappedOpen && <Wrapped items={items} goneItems={goneItems} wears={wears} outfits={outfits} onClose={() => setWrappedOpen(false)} />}
+    >
+      <button className="wrapped-cta glass" onClick={() => setWrappedOpen(true)}>
+        <span>
+          <strong>Wardrobe Wrapped</strong>
+          <span className="muted">Your month in clothes, as a picture to share</span>
+        </span>
+        <i className="prof-chev" aria-hidden="true">
+          ›
+        </i>
+      </button>
       <div className="stats">
         {stats.map((s) => (
           <div key={s.label} className="stat glass">

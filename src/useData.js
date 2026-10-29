@@ -301,5 +301,5 @@ export default function useData() {
     }
   }, [refresh])
 
-  return { items, folders, favorites, trips, wearInfo, outfitMap, outfits, actions }
+  return { items, folders, favorites, trips, wears, wearInfo, outfitMap, outfits, actions }
 }

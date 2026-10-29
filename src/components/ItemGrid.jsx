@@ -1,13 +1,38 @@
 import { useState } from 'react'
 import ItemCard from './ItemCard.jsx'
+import HangerRail from './HangerRail.jsx'
+import { setPrefs, usePrefs } from '../lib/prefs.js'
 
 // Two-column grid that draws 48 pieces at a time, so a big wardrobe stays smooth.
-export default function ItemGrid({ items, onOpen, selecting = false, picked, pageSize = 48 }) {
+export default function ItemGrid({ items, onOpen, selecting = false, picked, pageSize = 48, viewToggle = false }) {
+  const { view } = usePrefs()
   const [limit, setLimit] = useState(pageSize)
+  const rail = view === 'rail' && !selecting // picking pieces needs the grid
   const shown = items.length > limit ? items.slice(0, limit) : items
+
+  const toggle = viewToggle && !selecting && (
+    <div className="view-toggle" role="group" aria-label="Wardrobe view">
+      <button className={view !== 'rail' ? 'on' : ''} onClick={() => setPrefs({ view: 'grid' })}>
+        Grid
+      </button>
+      <button className={view === 'rail' ? 'on' : ''} onClick={() => setPrefs({ view: 'rail' })}>
+        Rail
+      </button>
+    </div>
+  )
+
+  if (rail) {
+    return (
+      <>
+        {toggle}
+        <HangerRail items={items} onOpen={onOpen} />
+      </>
+    )
+  }
 
   return (
     <>
+      {toggle}
       <div className="item-grid">
         {shown.map((item) => (
           <ItemCard

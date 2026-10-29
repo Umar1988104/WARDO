@@ -12,7 +12,7 @@ export function sourceUrl() {
   }
 }
 
-export const APP_VERSION = '1.0.0'
+export const APP_VERSION = '1.1.0'
 
 // open-source parts, shown in Profile > Storage and about
 export const CREDITS = [

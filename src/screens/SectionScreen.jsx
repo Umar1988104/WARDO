@@ -233,7 +233,7 @@ export default function SectionScreen({ section, folders, folderId, setFolderId,
           </div>
         ) : null
       ) : (
-        <ItemGrid key={folder ? folder.id : 'root'} items={shown} onOpen={selecting ? toggle : onOpenItem} selecting={selecting} picked={picked} />
+        <ItemGrid key={folder ? folder.id : 'root'} items={shown} onOpen={selecting ? toggle : onOpenItem} selecting={selecting} picked={picked} viewToggle />
       )}
     </Screen>
   )
