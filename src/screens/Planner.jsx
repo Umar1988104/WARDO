@@ -7,7 +7,7 @@ import MixMatch from '../components/MixMatch.jsx'
 import PackingList from '../components/PackingList.jsx'
 import FolderSheet from '../components/FolderSheet.jsx'
 import { OCCASIONS } from '../options.js'
-import WeatherChip from '../components/WeatherChip.jsx'
+import WeatherChip, { WeatherCredit } from '../components/WeatherChip.jsx'
 import { suggestOutfit } from '../lib/suggest.js'
 import { todayKey, monthGrid, dayTag, fromKey } from '../lib/dates.js'
 
@@ -161,6 +161,7 @@ export default function Planner({ items, favorites, trips = [], weather = null, 
           <p className="day-weather">
             <WeatherChip w={dayWeather} stale={weather?.stale} />
             {dayWeather.rain >= 60 && <span className="muted"> Take an umbrella.</span>}
+            <WeatherCredit />
           </p>
         )}
 

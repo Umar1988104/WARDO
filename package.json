@@ -1,7 +1,9 @@
 {
   "name": "wardo",
   "private": true,
-  "version": "0.12.1",
+  "version": "1.0.0",
+  "description": "Wardo: a private, offline wardrobe app. Photograph clothes, get clean cutouts, plan outfits.",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
     "dev": "vite --host",

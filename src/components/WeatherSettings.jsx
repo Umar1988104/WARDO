@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Switch from './Switch.jsx'
 import { setPrefs, usePrefs } from '../lib/prefs.js'
 import { searchPlace } from '../lib/weather.js'
+import { WeatherCredit } from './WeatherChip.jsx'
 
 // Profile group for the optional weather. Off until switched on, because it is the one thing that goes online.
 export default function WeatherSettings() {
@@ -60,6 +61,10 @@ export default function WeatherSettings() {
       />
       <p className="muted group-note">
         Needs internet. When on, only your city's coordinates go to Open-Meteo, a free weather service with no account. Your clothes and photos never leave your phone.
+      </p>
+
+      <p className="group-note">
+        <WeatherCredit />
       </p>
 
       {p.weatherOn && (

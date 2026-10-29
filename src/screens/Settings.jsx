@@ -6,6 +6,7 @@ import Switch from '../components/Switch.jsx'
 import { PinFlow } from '../components/PinPad.jsx'
 import { setLockApp, setLockInner } from '../lib/lock.js'
 import { PACKS, currentPreset, usePrefs } from '../lib/prefs.js'
+import { APP_VERSION, CREDITS, sourceUrl } from '../lib/about.js'
 import {
   buildBackup,
   backupFileName,
@@ -338,7 +339,7 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         )}
       </ProfRow>
 
-      <ProfRow id="storage" icon="💾" title="Storage and about" status={storage.usage != null ? `${mb(storage.usage)} MB · Wardo 0.12.1` : 'Wardo 0.12.1'} open={open} onToggle={toggle}>
+      <ProfRow id="storage" icon="💾" title="Storage and about" status={storage.usage != null ? `${mb(storage.usage)} MB · Wardo ${APP_VERSION}` : `Wardo ${APP_VERSION}`} open={open} onToggle={toggle}>
         <div className="row">
           <span>Storage</span>
           <span className="muted">{storage.usage != null ? `${mb(storage.usage)} MB used` : 'Unknown'}</span>
@@ -364,7 +365,37 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
         </div>
         <div className="row">
           <span>Version</span>
-          <span className="muted">Wardo 0.12.1</span>
+          <span className="muted">Wardo {APP_VERSION}</span>
+        </div>
+        <div className="about">
+          <p className="muted small">
+            Wardo is free, open-source software under the GNU AGPL-3.0 licence.
+            {sourceUrl() && (
+              <>
+                {' '}
+                <a href={sourceUrl()} target="_blank" rel="noopener noreferrer">
+                  Source code
+                </a>
+              </>
+            )}
+          </p>
+          <p className="muted small">Made with:</p>
+          <ul className="credits">
+            {CREDITS.map((c) => (
+              <li key={c.name}>
+                <a href={c.url} target="_blank" rel="noopener noreferrer">
+                  {c.name}
+                </a>
+                <span className="muted"> · {c.licence}</span>
+              </li>
+            ))}
+            <li>
+              <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+                Open-Meteo
+              </a>
+              <span className="muted"> · weather data, CC BY 4.0</span>
+            </li>
+          </ul>
         </div>
       </ProfRow>
     </Screen>

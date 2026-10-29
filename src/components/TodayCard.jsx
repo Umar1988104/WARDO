@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import OutfitStrip from './OutfitStrip.jsx'
-import WeatherChip from './WeatherChip.jsx'
+import WeatherChip, { WeatherCredit } from './WeatherChip.jsx'
 import { CalendarIcon } from './Icons.jsx'
 import { suggestOutfit } from '../lib/suggest.js'
 import { todayKey } from '../lib/dates.js'
@@ -57,6 +57,7 @@ export default function TodayCard({ items, outfitMap, wearInfo, actions, weather
           <p>{pick.message || (w ? 'Picked for today’s weather, from pieces you have not worn lately.' : 'Made from pieces you have not worn in a while.')}</p>
           <WeatherChip w={w} stale={weather?.stale} />
           {w && w.rain >= 60 && <p>Rain is likely. Take an umbrella.</p>}
+          {w && <WeatherCredit />}
         </div>
         <OutfitStrip items={picked} onOpen={onOpenItem} />
         <div className="hero-actions">

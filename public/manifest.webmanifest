@@ -1,7 +1,9 @@
 {
   "name": "Wardo",
   "short_name": "Wardo",
-  "description": "Your wardrobe, in your pocket.",
+  "description": "Your wardrobe, in your pocket. Private and offline.",
+  "lang": "en",
+  "categories": ["lifestyle", "productivity"],
   "id": "./",
   "start_url": "./",
   "scope": "./",

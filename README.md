@@ -1,32 +1,66 @@
 # Wardo
 
-Your wardrobe, in your pocket. Photograph your clothes, keep clean cutouts, and never forget what you own.
+**Your wardrobe, in your pocket.** Photograph your clothes, get clean cutouts, plan outfits, and never forget what you own.
 
-Free, private, and runs entirely on your phone. No account, no server.
+Free, private and offline-first. No account, no server, no ads. Your photos and data stay on your phone.
 
-## Status
+<!-- Add 4 to 6 phone screenshots to docs/screenshots/ and uncomment:
+<p>
+  <img src="docs/screenshots/home.png" width="190" alt="Home">
+  <img src="docs/screenshots/wardrobe.png" width="190" alt="Wardrobe">
+  <img src="docs/screenshots/planner.png" width="190" alt="Planner">
+  <img src="docs/screenshots/mix-match.png" width="190" alt="Mix and Match">
+</p>
+-->
 
-v0.12.1: compact Profile (tap-to-open sections) and a Common section for all-year pieces. v0.12.0: optional weather suggestions, packing lists, wardrobe check (gaps and duplicates), Donate and Sell. v0.11.0: laundry status, price and cost per wear, favorite outfits and Mix & Match. v0.10.1: fixes (filter sheet no longer stuck open, Android Back button steps back through screens) and a faster app with Settings for animations, blur, theme packs, accent colour and your name. Before that, v0.10.0: PIN lock and hidden Innerwear, add many pieces at once, cutout helpers. Before that, v0.9.0: new Closetly-style look (Home, cream and teal), offline install (service worker). Before that, v0.8.1: add items with automatic or by-hand cutout, touch-up, tags, search and filters, folders, wear tracking, forgotten clothes, outfit planner calendar, daily suggestion, backup and restore. All data stays on the device.
+## What it does
+
+- **Add clothes** with the camera or gallery. Automatic cutout, or cut by hand with your finger. Touch up any photo later.
+- **Organise** into Common (all year), Winter, Summer, Innerwear and Accessories, plus your own folders, tags, colours, categories and notes.
+- **Find things** with search and filters (including laundry).
+- **Track wearing:** what you wore, what you forgot, most-worn pieces.
+- **Plan outfits** on a calendar, get a daily suggestion, build looks in **Mix & Match**, and save **favorite outfits**.
+- **Laundry status**, **price and cost per wear**, and a **wardrobe check** that points out gaps and duplicates.
+- **Packing lists** for trips, built from your clean clothes.
+- **Donate or sell** pieces you no longer wear, with a history.
+- **Optional weather** (off by default) to suggest lighter or warmer pieces.
+- **Private by design:** PIN lock, a hidden Innerwear section, and backup files you own.
+- **Fast on any phone:** Fast, Balanced and Full speed modes, plus theme packs and accent colours.
+
+## Privacy
+
+- Photos, clothes and plans are stored only in your browser's storage on your phone. Nothing is uploaded.
+- The first automatic cutout downloads the cutout model once from IMG.LY's CDN, then keeps it for offline use. Cutting by hand needs no download.
+- Weather is **off by default**. If you turn it on, only the coordinates of the place you choose are sent to [Open-Meteo](https://open-meteo.com/).
+- Back up often from Profile. Clearing your browser data or uninstalling the app removes your wardrobe.
+
+## Install on a phone
+
+1. Open the Wardo link in Chrome (Android) or Safari (iPhone).
+2. Android: menu, then **Install app**. iPhone: Share, then **Add to Home Screen**.
+3. Open it once with internet so it can save itself. After that it works offline.
 
 ## Run locally
 
 ```bash
 npm install
-npm run dev
+npm run dev      # development, opens on your network too
+npm run build    # production build in dist/
+npm run preview
 ```
 
-## Roadmap
+Deployed to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`.
 
-- v0.2 add item with camera and automatic cutout (done)
-- v0.3 touch-up tool and front/back photos (done)
-- v0.4 tags, colors and notes (done)
-- v0.5 wardrobe grid, filters, search (done)
-- v0.6 wear tracking and forgotten clothes (done)
-- v0.7 outfit planner and daily suggestion (done)
-- v0.8 by-hand cutout, folders, backup/restore, faster grids (done)
-- v0.9 Closetly look and offline install (done)
-- v0.10 PIN lock / hidden innerwear, add several photos, cutout quality helpers (done)
-- v0.10.1 fix pass: Back button, stuck filter sheet, speed settings, theme packs (done)
-- v0.11 (done): laundry status, price and cost per wear, favorite outfits, Mix & Match
-- v0.12 (done) weather suggestions, trip packing list, duplicate and gap warnings, donate/sell list
-- v1.0 polish (empty states, re-edit photos, real-phone tests) and release
+## Built with
+
+React, Vite, Dexie (IndexedDB), vite-plugin-pwa (Workbox) and [@imgly/background-removal](https://github.com/imgly/background-removal-js) for on-device cutouts. Weather data by [Open-Meteo.com](https://open-meteo.com/).
+
+## Licence
+
+Wardo is released under the **GNU Affero General Public License v3.0** (see `LICENSE`). This is because it uses `@imgly/background-removal`, which is AGPL-3.0, so the app that includes it must be shared under the same licence, with its source available to users. If you want to use Wardo in a closed-source or commercial product, you would need a commercial licence from IMG.LY for the cutout library and from Open-Meteo for weather data, or swap those parts out.
+
+## More
+
+- [Changelog](CHANGELOG.md)
+- [Real-phone test checklist](docs/TESTING.md)
+- [Launch kit: LinkedIn, resume and portfolio text](docs/LAUNCH.md)
