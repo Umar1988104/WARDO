@@ -17,6 +17,7 @@ export const PACKS = {
   ocean: { label: 'Ocean', light: '#2b6cb0', dark: '#7ab8f5', blobs: ['#a8d8ff', '#8fe3e8', '#b8b4ff'] },
   sunset: { label: 'Sunset', light: '#d0561f', dark: '#ffa070', blobs: ['#ffd08a', '#ff9f8a', '#e9a8ff'] },
   lavender: { label: 'Lavender', light: '#7156c8', dark: '#b7a2ff', blobs: ['#d6c4ff', '#a8d8ff', '#ffc4e1'] },
+  chocolate: { label: 'Chocolate', light: '#7a4326', dark: '#d29a6a', blobs: ['#c98a5b', '#8a5233', '#5a3320'] },
   graphite: { label: 'Graphite', light: '#3d4a52', dark: '#b8c4cc', blobs: ['#d8dde0', '#c4ccd2', '#e2d8d0'] },
 }
 
@@ -84,7 +85,9 @@ const rgba = (c, a) => {
 const VAR_KEYS = ['--accent', '--accent-2', '--accent-grad', '--accent-deep', '--mint', '--hero-grad', '--blob-a', '--blob-b', '--blob-c', '--mesh']
 
 function themeVars(p, dark, amoled) {
-  const pack = PACKS[p.pack] || PACKS.closetly
+  let pack = PACKS[p.pack] || PACKS.closetly
+  // AMOLED has its own look: black, white and chocolate. Choosing another pack or a custom accent still wins.
+  if (amoled && pack === PACKS.closetly && !p.accent) pack = PACKS.chocolate
   if (pack === PACKS.closetly && !p.accent && !amoled) return null // the stylesheet already has these
 
   const gb = p.accent || pack.light // base for gradients (same in light and dark, like the original)

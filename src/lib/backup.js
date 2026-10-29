@@ -9,7 +9,7 @@ import { db } from '../db.js'
 // so saving and restoring stay light even for a big wardrobe.
 
 const MAGIC = 'WARDOBK1'
-const APP_VERSION = '1.1.0'
+const APP_VERSION = '1.1.1'
 const LAST_KEY = 'wardo-last-backup'
 
 export function getLastBackup() {

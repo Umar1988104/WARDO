@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+- AMOLED is now black, bright white and chocolate brown: deep black background, pure white text, chocolate-black boxes with thin warm borders, and a warm spotlight behind clothes. No blur, so it is sharp and fast.
+- New Chocolate theme pack. AMOLED uses it by default; picking another pack or accent colour still works.
+- Removed the "Today's outfit" box from Home. Today's outfit and suggestions are in the Planner. Today's weather now shows under the greeting.
+
 ## 1.1.0
 - **AMOLED theme:** pure black with thin glass, still clouds instead of moving ones, and a spotlight glow behind every cutout. Pick it in Profile > Look > Appearance. The dark theme also got a softer spotlight.
 - **Wardrobe Wrapped:** a shareable picture of your month, year or all time (most-worn piece, wears, streak, colours, best value, money earned). Innerwear is never included. Open it from Insights.

@@ -78,7 +78,7 @@ export function LookPanel({ theme, setTheme }) {
         <span>Appearance</span>
       </div>
       <Segmented options={THEMES} value={theme} onChange={setTheme} />
-      {theme === 'amoled' && <p className="muted group-note">Pure black with a spotlight glow on your clothes. Easy on the eyes at night and saves battery on OLED screens.</p>}
+      {theme === 'amoled' && <p className="muted group-note">Deep black, bright white and chocolate brown, with a warm spotlight behind your clothes. Saves battery on OLED screens.</p>}
 
       <div className="row">
         <span>Theme pack</span>

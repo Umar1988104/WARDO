@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import TodayCard from '../components/TodayCard.jsx'
+import WeatherChip, { WeatherCredit } from '../components/WeatherChip.jsx'
 import BackupNudge from '../components/BackupNudge.jsx'
 import { SearchIcon, PlusIcon, CalendarIcon, InsightsIcon, SettingsIcon, LockIcon } from '../components/Icons.jsx'
 import { usePrefs } from '../lib/prefs.js'
@@ -35,9 +35,10 @@ function greeting() {
   return 'Good evening'
 }
 
-export default function Home({ items, innerHidden = false, onReview, wearInfo, outfitMap, actions, weather = null, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
+export default function Home({ items, innerHidden = false, onReview, wearInfo, weather = null, onAdd, onPlan, onInsights, onOpenSettings, onSearch, onOpenSection, onOpenItem }) {
   const prefs = usePrefs()
   const who = prefs.name.trim()
+  const todayWeather = weather?.days?.[todayKey()] || null
   const stats = useMemo(() => {
     const month = todayKey().slice(0, 7)
     let worn = 0
@@ -71,6 +72,12 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, o
       <div className="home-hello">
         <h1>{who ? `${greeting()}, ${who}` : greeting()}</h1>
         <p className="muted">{prefs.title.trim() || 'Your style, your way'}</p>
+        {todayWeather && (
+          <p className="home-weather">
+            <WeatherChip w={todayWeather} stale={weather?.stale} />
+            <WeatherCredit />
+          </p>
+        )}
       </div>
 
       <button className="home-search glass" onClick={onSearch}>
@@ -108,8 +115,6 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, o
       )}
 
       <BackupNudge count={items.length} onOpen={onOpenSettings} />
-
-      <TodayCard items={items} outfitMap={outfitMap} wearInfo={wearInfo} actions={actions} weather={weather} onPlan={onPlan} onOpenItem={onOpenItem} />
 
       <h3 className="section-title">Quick actions</h3>
       <div className="quick-row">
