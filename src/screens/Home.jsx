@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import WeatherChip, { WeatherCredit } from '../components/WeatherChip.jsx'
 import BackupNudge from '../components/BackupNudge.jsx'
+import StatRing from '../components/StatRing.jsx'
 import { SearchIcon, PlusIcon, CalendarIcon, InsightsIcon, SettingsIcon, LockIcon } from '../components/Icons.jsx'
 import { usePrefs } from '../lib/prefs.js'
 import { SECTIONS } from '../sections.js'
-import { daysSince, keyOf, todayKey } from '../lib/dates.js'
+import { addDays, daysSince, keyOf, todayKey } from '../lib/dates.js'
 
 // numbers roll up from 0 when the screen opens
 function CountUp({ to }) {
@@ -26,6 +27,15 @@ function CountUp({ to }) {
     return () => cancelAnimationFrame(raf)
   }, [to])
   return v
+}
+
+// a small icon for the time of day, shown in the floating orb next to the greeting
+function timeIcon() {
+  const h = new Date().getHours()
+  if (h >= 5 && h < 12) return '🌤️'
+  if (h >= 12 && h < 17) return '☀️'
+  if (h >= 17 && h < 20) return '🌇'
+  return '🌙'
 }
 
 function greeting() {
@@ -52,6 +62,20 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, w
     return { total: items.length, worn, forgotten }
   }, [items, wearInfo])
 
+  // days in a row with something worn, counting back from today (or yesterday if today is not logged yet)
+  const streak = useMemo(() => {
+    const days = new Set()
+    for (const item of items) for (const d of wearInfo[item.id]?.dates || []) days.add(d)
+    let cur = todayKey()
+    if (!days.has(cur)) cur = addDays(cur, -1)
+    let n = 0
+    while (days.has(cur)) {
+      n += 1
+      cur = addDays(cur, -1)
+    }
+    return n
+  }, [items, wearInfo])
+
   const pending = useMemo(() => items.filter((i) => i.needsDetails).length, [items])
 
   const counts = useMemo(() => {
@@ -70,8 +94,25 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, w
   return (
     <main className="screen home">
       <div className="home-hello">
-        <h1>{who ? `${greeting()}, ${who}` : greeting()}</h1>
-        <p className="muted">{prefs.title.trim() || 'Your style, your way'}</p>
+        <div className="hello-row">
+          <span className="hello-orb" aria-hidden="true">
+            {timeIcon()}
+          </span>
+          <div>
+            <h1>{who ? `${greeting()}, ${who}` : greeting()}</h1>
+            <p className="muted">{prefs.title.trim() || 'Your style, your way'}</p>
+          </div>
+        </div>
+        {streak >= 2 && (
+          <p className="home-weather">
+            <span className="streak-chip">
+              <span className="streak-flame" aria-hidden="true">
+                🔥
+              </span>
+              {streak}-day wear streak
+            </span>
+          </p>
+        )}
         {todayWeather && (
           <p className="home-weather">
             <WeatherChip w={todayWeather} stale={weather?.stale} />
@@ -85,19 +126,16 @@ export default function Home({ items, innerHidden = false, onReview, wearInfo, w
         Search your wardrobe...
       </button>
 
-      <div className="stats home-stats">
-        <div className="stat glass">
-          <strong><CountUp to={stats.total} /></strong>
-          <span>Total items</span>
-        </div>
-        <div className="stat glass">
-          <strong><CountUp to={stats.worn} /></strong>
-          <span>Worn this month</span>
-        </div>
-        <div className={'stat glass' + (stats.forgotten > 0 ? ' stat-warn' : '')}>
-          <strong><CountUp to={stats.forgotten} /></strong>
-          <span>Forgotten</span>
-        </div>
+      <div className="rings">
+        <StatRing value={stats.total} total={stats.total} label="Total items">
+          <CountUp to={stats.total} />
+        </StatRing>
+        <StatRing value={stats.worn} total={stats.total} label="Worn this month">
+          <CountUp to={stats.worn} />
+        </StatRing>
+        <StatRing value={stats.forgotten} total={stats.total} label="Forgotten" warn>
+          <CountUp to={stats.forgotten} />
+        </StatRing>
       </div>
 
       {pending > 0 && (

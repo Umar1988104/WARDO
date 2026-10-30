@@ -1,9 +1,10 @@
 # Changelog
 
 ## 1.1.1
-- AMOLED is now black, bright white and chocolate brown: deep black background, pure white text, chocolate-black boxes with thin warm borders, and a warm spotlight behind clothes. No blur, so it is sharp and fast.
-- New Chocolate theme pack. AMOLED uses it by default; picking another pack or accent colour still works.
-- Removed the "Today's outfit" box from Home. Today's outfit and suggestions are in the Planner. Today's weather now shows under the greeting.
+- AMOLED is now pure black and bright white, with a soft spotlight behind clothes. No blur, so it is sharp and fast.
+- New **Black & White** theme pack (AMOLED uses it by default) and **Black** and **White** accent colours. Buttons switch to dark text on white automatically.
+- Removed the "Today's outfit" box from Home. Today's outfit and suggestions are in the Planner. Today's weather shows under the greeting.
+- Home: a floating time-of-day orb, progress rings for Total items, Worn this month and Forgotten, and a wear-streak chip. All of it stops when animations are Reduced or Off.
 
 ## 1.1.0
 - **AMOLED theme:** pure black with thin glass, still clouds instead of moving ones, and a spotlight glow behind every cutout. Pick it in Profile > Look > Appearance. The dark theme also got a softer spotlight.

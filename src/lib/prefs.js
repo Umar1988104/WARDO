@@ -17,11 +17,11 @@ export const PACKS = {
   ocean: { label: 'Ocean', light: '#2b6cb0', dark: '#7ab8f5', blobs: ['#a8d8ff', '#8fe3e8', '#b8b4ff'] },
   sunset: { label: 'Sunset', light: '#d0561f', dark: '#ffa070', blobs: ['#ffd08a', '#ff9f8a', '#e9a8ff'] },
   lavender: { label: 'Lavender', light: '#7156c8', dark: '#b7a2ff', blobs: ['#d6c4ff', '#a8d8ff', '#ffc4e1'] },
-  chocolate: { label: 'Chocolate', light: '#7a4326', dark: '#d29a6a', blobs: ['#c98a5b', '#8a5233', '#5a3320'] },
+  mono: { label: 'Black & White', light: '#111111', dark: '#ffffff', blobs: ['#d9d9d9', '#bdbdbd', '#ececec'] },
   graphite: { label: 'Graphite', light: '#3d4a52', dark: '#b8c4cc', blobs: ['#d8dde0', '#c4ccd2', '#e2d8d0'] },
 }
 
-export const ACCENTS = ['#23796d', '#c2477a', '#2b6cb0', '#d0561f', '#7156c8', '#b8860b', '#2f855a', '#3d4a52']
+export const ACCENTS = ['#0a0a0a', '#ffffff', '#23796d', '#c2477a', '#2b6cb0', '#d0561f', '#7156c8', '#b8860b', '#2f855a', '#3d4a52']
 
 function lowEndPhone() {
   try {
@@ -82,26 +82,46 @@ const rgba = (c, a) => {
   return `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
-const VAR_KEYS = ['--accent', '--accent-2', '--accent-grad', '--accent-deep', '--mint', '--hero-grad', '--blob-a', '--blob-b', '--blob-c', '--mesh']
+const VAR_KEYS = ['--on-accent', '--accent', '--accent-2', '--accent-grad', '--accent-deep', '--mint', '--hero-grad', '--blob-a', '--blob-b', '--blob-c', '--mesh']
+
+const BLACK = '#0a0a0a'
+const WHITE = '#ffffff'
+
+// AMOLED has its own look: black and white. Choosing another pack or a custom accent still wins.
+function effectivePack(p, amoled) {
+  const pack = PACKS[p.pack] || PACKS.closetly
+  return amoled && pack === PACKS.closetly && !p.accent ? PACKS.mono : pack
+}
+
+// Black and white themes need dark text on white buttons and white text on black ones.
+export function isMono(p, amoled) {
+  return effectivePack(p, amoled) === PACKS.mono || p.accent === BLACK || p.accent === WHITE
+}
+
+const luminance = (hex) => {
+  const [r, g, b] = rgb(hex).map((v) => v / 255)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
 
 function themeVars(p, dark, amoled) {
-  let pack = PACKS[p.pack] || PACKS.closetly
-  // AMOLED has its own look: black, white and chocolate. Choosing another pack or a custom accent still wins.
-  if (amoled && pack === PACKS.closetly && !p.accent) pack = PACKS.chocolate
+  const pack = effectivePack(p, amoled)
   if (pack === PACKS.closetly && !p.accent && !amoled) return null // the stylesheet already has these
 
-  const gb = p.accent || pack.light // base for gradients (same in light and dark, like the original)
-  const base = dark ? (p.accent ? mix(p.accent, '#ffffff', 0.35) : pack.dark) : gb
+  // base for gradients. Same in light and dark like the original, except black & white, which flips so buttons stay visible
+  let gb = p.accent || (pack === PACKS.mono && dark ? pack.dark : pack.light)
+  if (dark && p.accent === BLACK) gb = '#2b2b2b' // a black accent on a dark page: charcoal with a light edge
+  const base = dark ? (p.accent === BLACK ? '#c4c4c4' : p.accent ? mix(p.accent, '#ffffff', 0.35) : pack.dark) : gb
   const blobs = [...pack.blobs]
   if (p.accent) blobs[1] = mix(p.accent, '#ffffff', 0.5)
   const blob = (c, i) => (dark ? rgba(mix(c, '#000000', 0.35), [0.35, 0.4, 0.35][i]) : rgba(c, [0.65, 0.6, 0.5][i]))
 
   // AMOLED: no moving colour clouds, just a faint glow of the accent on pure black
   const glow = amoled
-    ? { '--blob-a': rgba(base, 0.16), '--blob-b': rgba(mix(base, '#ffffff', 0.3), 0.07), '--blob-c': 'rgba(0, 0, 0, 0)' }
+    ? { '--blob-a': rgba(base, 0.1), '--blob-b': rgba(mix(base, '#ffffff', 0.3), 0.05), '--blob-c': 'rgba(0, 0, 0, 0)' }
     : {}
 
   return {
+    '--on-accent': luminance(gb) > 0.6 ? '#0a0a0a' : '#ffffff', // readable text on the accent colour
     '--accent': base,
     '--accent-2': mix(base, '#ffffff', 0.25),
     '--accent-grad': `linear-gradient(135deg, ${mix(gb, '#000000', 0.3)} 0%, ${gb} 55%, ${mix(gb, '#ffffff', 0.35)} 100%)`,
@@ -155,6 +175,7 @@ export function applyPrefs() {
   el.dataset.bg = prefs.liveBg ? 'on' : 'off'
   el.dataset.cols = String(prefs.cols)
   for (const k of VAR_KEYS) el.style.removeProperty(k)
+  el.dataset.mono = isMono(prefs, isAmoled()) ? 'on' : 'off'
   const vars = themeVars(prefs, isDark(), isAmoled())
   if (vars) for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v)
 }
