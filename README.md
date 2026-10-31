@@ -27,7 +27,7 @@ Free, private and offline-first. No account, no server, no ads. Your photos and 
 - **Private by design:** PIN lock, a hidden Innerwear section, and backup files you own.
 - **Wardrobe Wrapped:** a shareable picture of your month in clothes, made on your phone.
 - **Colour match** for every piece, and a **hanger rail** view of your wardrobe.
-- **Fast on any phone:** Fast, Balanced and Full speed modes, an **AMOLED** black theme, theme packs and accent colours.
+- **Fast on any phone:** Fast, Balanced and Full speed modes, a flat, pure-black dark theme, a clean light theme and a choice of accent colours.
 
 ## Privacy
 

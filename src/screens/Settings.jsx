@@ -5,7 +5,7 @@ import WeatherSettings from '../components/WeatherSettings.jsx'
 import Switch from '../components/Switch.jsx'
 import { PinFlow } from '../components/PinPad.jsx'
 import { setLockApp, setLockInner } from '../lib/lock.js'
-import { PACKS, currentPreset, usePrefs } from '../lib/prefs.js'
+import { accentName, currentPreset, usePrefs } from '../lib/prefs.js'
 import { APP_VERSION, CREDITS, sourceUrl } from '../lib/about.js'
 import {
   buildBackup,
@@ -179,7 +179,7 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
 
   const preset = currentPreset(prefs)
   const tiles = [
-    { id: 'look', icon: '🎨', title: 'Look', status: (PACKS[prefs.pack]?.label || 'Closetly') + (prefs.accent ? ' · custom' : '') },
+    { id: 'look', icon: '🎨', title: 'Look', status: accentName(prefs.accent) },
     { id: 'speed', icon: '⚡', title: 'Speed', status: preset === 'custom' ? 'Custom' : preset[0].toUpperCase() + preset.slice(1) },
     { id: 'weather', icon: '⛅', title: 'Weather', status: prefs.weatherOn ? prefs.place?.name?.split(',')[0] || 'Pick a place' : 'Off' },
     { id: 'habits', icon: '👕', title: 'Wardrobe', status: 'Laundry, grid, start' },

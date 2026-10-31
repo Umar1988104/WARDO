@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.1.1
+- **Flat look.** Dark is pure black with solid dark-grey boxes, light is a clean white and grey, and there are no gradients, glow or glass. Cards, buttons, tab bar and switches are flat. Theme packs are gone: you pick Auto, Light or Dark, and one accent colour (Blue, Purple, Green, Orange, Pink, Teal, Black & white, or any colour). The blur and moving-background settings are gone because there is no blur or moving background any more.
 - AMOLED is now pure black and bright white, with a soft spotlight behind clothes. No blur, so it is sharp and fast.
 - New **Black & White** theme pack (AMOLED uses it by default) and **Black** and **White** accent colours. Buttons switch to dark text on white automatically.
 - Removed the "Today's outfit" box from Home. Today's outfit and suggestions are in the Planner. Today's weather shows under the greeting.

@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import './styles.css'
 import './closetly.css'
 import './perf.css'
+import './flat.css'
 
 // Service worker: keeps the app (and the cutout model once downloaded) available offline.
 registerSW({ immediate: true })

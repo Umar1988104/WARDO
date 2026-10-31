@@ -1,12 +1,11 @@
 import Segmented from './Segmented.jsx'
 import Switch from './Switch.jsx'
-import { ACCENTS, PACKS, PRESETS, currentPreset, resetLook, setPrefs, usePrefs } from '../lib/prefs.js'
+import { ACCENTS, PRESETS, currentPreset, resetLook, setPrefs, usePrefs } from '../lib/prefs.js'
 
 const THEMES = [
   { value: 'auto', label: 'Auto' },
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
-  { value: 'amoled', label: 'AMOLED' },
 ]
 const VIEWS = [
   { value: 'grid', label: 'Grid' },
@@ -20,11 +19,6 @@ const SPEEDS = [
 const MOTION = [
   { value: 'full', label: 'Full' },
   { value: 'reduced', label: 'Reduced' },
-  { value: 'off', label: 'Off' },
-]
-const BLUR = [
-  { value: 'full', label: 'Full' },
-  { value: 'light', label: 'Light' },
   { value: 'off', label: 'Off' },
 ]
 const COLS = [
@@ -69,64 +63,42 @@ export function YouPanel() {
   )
 }
 
-// Appearance, theme pack and accent colour.
+// Light or dark (dark is pure black) and one accent colour.
 export function LookPanel({ theme, setTheme }) {
   const p = usePrefs()
+  const current = theme === 'amoled' ? 'dark' : theme
   return (
     <>
       <div className="row">
         <span>Appearance</span>
       </div>
-      <Segmented options={THEMES} value={theme} onChange={setTheme} />
-      {theme === 'amoled' && <p className="muted group-note">Pure black and bright white, with a soft spotlight behind your clothes. Saves battery on OLED screens.</p>}
+      <Segmented options={THEMES} value={current} onChange={setTheme} />
+      {current === 'dark' && <p className="muted group-note">Pure black. Saves battery on OLED screens.</p>}
 
       <div className="row">
-        <span>Theme pack</span>
-        <span className="muted">{PACKS[p.pack]?.label}</span>
+        <span>Accent color</span>
       </div>
-      <div className="look-swatches" role="radiogroup" aria-label="Theme pack">
-        {Object.entries(PACKS).map(([id, pack]) => (
-          <button
-            key={id}
-            type="button"
-            role="radio"
-            aria-checked={p.pack === id}
-            aria-label={pack.label}
-            className={'swatch' + (p.pack === id ? ' swatch-on' : '')}
-            style={{ background: `linear-gradient(135deg, ${pack.blobs[0]}, ${pack.light} 60%, ${pack.blobs[2]})` }}
-            onClick={() => setPrefs({ pack: id, accent: null })}
-          />
-        ))}
-      </div>
-
-      <div className="row">
-        <span>Accent colour</span>
-        <span className="muted">{p.accent ? p.accent : 'Pack colour'}</span>
-      </div>
-      <div className="look-swatches" role="radiogroup" aria-label="Accent colour">
+      <div className="look-swatches" role="radiogroup" aria-label="Accent color">
         {ACCENTS.map((c) => (
           <button
-            key={c}
+            key={c.id}
             type="button"
             role="radio"
-            aria-checked={p.accent === c}
-            aria-label={'Accent ' + c}
-            className={'swatch swatch-dot' + (p.accent === c ? ' swatch-on' : '')}
-            style={{ background: c }}
-            onClick={() => setPrefs({ accent: c })}
+            aria-checked={(p.accent || 'blue') === c.id}
+            aria-label={c.name}
+            title={c.name}
+            className={'swatch swatch-dot' + ((p.accent || 'blue') === c.id ? ' swatch-on' : '') + (c.id === 'mono' ? ' swatch-mono' : '')}
+            style={c.id === 'mono' ? undefined : { background: c.light }}
+            onClick={() => setPrefs({ accent: c.id })}
           />
         ))}
-        <label className="swatch swatch-dot swatch-pick" aria-label="Pick any colour">
-          <input type="color" value={p.accent || PACKS[p.pack]?.light || '#23796d'} onChange={(e) => setPrefs({ accent: e.target.value })} />
+        <label className={'swatch swatch-dot swatch-pick' + (/^#/.test(p.accent) ? ' swatch-on' : '')} aria-label="Pick any colour">
+          <input type="color" value={/^#/.test(p.accent) ? p.accent : '#007aff'} onChange={(e) => setPrefs({ accent: e.target.value })} />
           <span aria-hidden="true">+</span>
         </label>
       </div>
+      <p className="muted group-note">Black & white is black in light mode and white in dark mode.</p>
       <div className="group-buttons">
-        {p.accent && (
-          <button className="pill" onClick={() => setPrefs({ accent: null })}>
-            Use the pack colour
-          </button>
-        )}
         <button className="pill" onClick={resetLook}>
           Reset look and speed
         </button>
@@ -147,18 +119,13 @@ export function SpeedPanel() {
       </div>
       <Segmented options={SPEEDS} value={preset} onChange={(v) => setPrefs(PRESETS[v])} />
       <p className="muted group-note">
-        If the app feels slow or warm, choose Fast. It switches off most animations and the frosted-glass blur.
+        If the app feels slow or warm, choose Fast. It switches off most animations.
       </p>
 
       <div className="row">
         <span>Animations</span>
       </div>
       <Segmented options={MOTION} value={p.motion} onChange={(v) => setPrefs({ motion: v })} />
-      <div className="row">
-        <span>Frosted-glass blur</span>
-      </div>
-      <Segmented options={BLUR} value={p.blur} onChange={(v) => setPrefs({ blur: v })} />
-      <Switch label="Moving background" hint="Slow drifting colour clouds" on={p.liveBg} onChange={(v) => setPrefs({ liveBg: v })} />
     </>
   )
 }

@@ -30,10 +30,10 @@ Test on a real Android phone (ideally a low-end one) and, if you can, an iPhone.
 - [ ] Turn on Weather, search your city, see the forecast on Home and Planner.
 
 ## New in 1.1
-- [ ] Profile > Look > Appearance > AMOLED: the background is pure black, text is bright white, boxes are near-black with thin white borders, and buttons are white with dark text. Close and reopen the app: no flash of another theme.
-- [ ] Profile > Look: Theme pack > Black & White, and the Black and White accent colours work in light, dark and AMOLED. Button text stays readable.
+- [ ] Profile > Look > Appearance: Dark is pure black with solid dark-grey boxes. Light is white and grey. Auto follows the phone. Close and reopen the app: no flash of another theme.
+- [ ] Pick each accent colour, including Black & white (black in light mode, white in dark mode). Buttons, the active tab, the add button and switches follow it, and button text stays readable.
 - [ ] Home shows the three rings drawing in, and a streak chip after wearing something two days in a row.
-- [ ] The sun/moon button switches between light and your last dark style (Dark or AMOLED).
+- [ ] The sun/moon button switches between light and dark.
 - [ ] Wardrobe > Rail: pieces hang on rails by category. Tap one: it swings and opens. Select mode shows the normal grid.
 - [ ] Open a piece: "Goes well with" shows colours and matching pieces from your wardrobe.
 - [ ] Mix & Match shows a "Colours: ..." line.

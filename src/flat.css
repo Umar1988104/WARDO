@@ -1,0 +1,332 @@
+/* =========================================================
+   Wardo flat look
+   Pure black dark mode, clean light mode, solid cards, no gradients, no glow,
+   no blur, and one flat accent colour. Loaded last, so it wins over older styles.
+   ========================================================= */
+
+/* ---------- Colours ---------- */
+:root {
+  color-scheme: light;
+  --bg: #f2f2f7;
+  --text: #000000;
+  --muted: #6c6c70;
+  --card: #ffffff; /* boxes */
+  --card-hi: #f2f2f7; /* inputs, picture backgrounds, small buttons */
+  --track: #eeeef3; /* behind a segmented control */
+  --seg-on: #ffffff;
+  --seg-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --hairline: rgba(60, 60, 67, 0.14);
+  --scrim: rgba(0, 0, 0, 0.35);
+  --accent: #007aff;
+  --accent-2: #007aff;
+  --accent-grad: var(--accent);
+  --mint: var(--accent);
+  --on-accent: #ffffff;
+  --glass: var(--card);
+  --glass-solid: var(--card);
+  --glass-border: transparent;
+  --glass-shadow: none;
+  --mesh: none;
+  --blob-a: transparent;
+  --blob-b: transparent;
+  --blob-c: transparent;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --text: #ffffff;
+  --muted: #8e8e93;
+  --card: #111114;
+  --card-hi: #1c1c21;
+  --track: #08080a;
+  --seg-on: #1c1c21;
+  --seg-shadow: none;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --scrim: rgba(0, 0, 0, 0.62);
+  --glass: var(--card);
+  --glass-solid: var(--card);
+  --glass-border: transparent;
+  --glass-shadow: none;
+  --mesh: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #000000;
+    --text: #ffffff;
+    --muted: #8e8e93;
+    --card: #111114;
+    --card-hi: #1c1c21;
+    --track: #08080a;
+    --seg-on: #1c1c21;
+    --seg-shadow: none;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --scrim: rgba(0, 0, 0, 0.62);
+    --glass: var(--card);
+    --glass-solid: var(--card);
+    --glass-border: transparent;
+    --glass-shadow: none;
+    --mesh: none;
+  }
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* no colour clouds, no frosted glass */
+.backdrop-art {
+  display: none;
+}
+.glass {
+  background: var(--card);
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.scrim,
+.scrim-over {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--scrim);
+}
+
+/* ---------- Titles and top bar ---------- */
+.large-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.navbar,
+.navbar.glass {
+  background: var(--bg);
+  box-shadow: none;
+  border-bottom: 1px solid transparent;
+}
+.navbar-on {
+  border-bottom-color: var(--hairline);
+}
+.back.glass,
+.theme-toggle.glass {
+  background: var(--card);
+  box-shadow: none;
+}
+
+/* ---------- Bottom bar: flat, the active tab is just coloured ---------- */
+.tabbar,
+.tabbar.glass {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-radius: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--hairline);
+  box-shadow: none;
+}
+.tab::before {
+  display: none;
+}
+.tab-active {
+  color: var(--accent);
+}
+.tab-active svg {
+  animation: none;
+}
+.tab-add {
+  width: 56px;
+  height: 56px;
+  margin-top: -20px;
+  background: var(--accent);
+  box-shadow: none;
+}
+.tab-add::after {
+  display: none;
+}
+.tab-add svg {
+  color: var(--on-accent);
+  filter: none;
+}
+
+/* ---------- Boxes, tiles and cards ---------- */
+.tile {
+  background: linear-gradient(160deg, var(--tint), transparent 70%), var(--card);
+  box-shadow: none;
+}
+.chip,
+.tile .chip {
+  background: var(--t1);
+  box-shadow: none;
+}
+.item-card {
+  background: var(--card);
+  border: 0;
+  box-shadow: none;
+}
+.sheet,
+.sheet.glass {
+  background: var(--card);
+  box-shadow: none;
+}
+.overlay {
+  background: var(--bg);
+}
+.prof-ico {
+  background: var(--card-hi);
+}
+.hello-orb {
+  background: var(--card);
+  box-shadow: none;
+}
+.weather-chip,
+.home-weather .weather-chip,
+.daypanel .weather-chip {
+  background: var(--card-hi);
+  border: 0;
+  color: var(--text);
+}
+
+/* pictures sit on a flat tile, no spotlight */
+.item-thumb,
+.mm-card,
+.pack-thumb,
+.letgo-thumb,
+.hung-pic,
+.pk-thumb {
+  background: var(--card-hi) !important;
+  box-shadow: none !important;
+}
+.rail-bar {
+  background: var(--muted);
+}
+
+/* ---------- Buttons, chips, segmented controls ---------- */
+.btn-primary,
+.pill-accent,
+.view-toggle .on {
+  background: var(--accent);
+  box-shadow: none;
+}
+.pill {
+  background: var(--card-hi);
+  border: 0;
+  box-shadow: none;
+}
+.pill-accent {
+  background: var(--accent);
+}
+.btn-primary,
+.pill-accent,
+.view-toggle .on,
+.tab-add svg,
+.week-day-on,
+.filter-btn b,
+.day-sel,
+.pk-check,
+.pin-lock,
+.pin-key:active,
+.batch-state b,
+.me-avatar,
+.sel-dot-on {
+  color: var(--on-accent);
+}
+.me-avatar {
+  background: var(--accent);
+}
+.stat strong {
+  background: none;
+  -webkit-text-fill-color: var(--text);
+  color: var(--text);
+}
+
+.segmented,
+.group .segmented {
+  background: var(--track);
+  border: 0;
+  box-shadow: none;
+}
+.segmented .seg-on {
+  background: var(--seg-on);
+  color: var(--accent);
+  box-shadow: var(--seg-shadow);
+}
+.view-toggle {
+  background: var(--track);
+  box-shadow: none;
+}
+
+.field input,
+.field textarea,
+.field select,
+.search,
+.home-search,
+.mini-input,
+.me-fields input,
+.weather-search input,
+.letgo-actions .price-input input {
+  background: var(--card);
+  border: 0;
+  box-shadow: none;
+}
+.overlay .field input,
+.overlay .field textarea,
+.sheet .field input {
+  background: var(--card-hi);
+}
+
+/* switches are green, like the system ones */
+.switch {
+  background: rgba(120, 120, 128, 0.32);
+}
+.switch-on {
+  background: #34c759;
+}
+.switch i {
+  box-shadow: none;
+}
+
+/* ---------- Progress rings ---------- */
+.ring-bg {
+  stroke: rgba(120, 120, 128, 0.22);
+}
+
+/* ---------- Colour dots in Look ---------- */
+.swatch {
+  box-shadow: none;
+}
+.swatch-on {
+  border-color: var(--card);
+  box-shadow: 0 0 0 3px var(--accent);
+}
+.swatch-mono {
+  background: linear-gradient(135deg, #000 50%, #fff 50%);
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+.swatch-mono.swatch-on {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+.group .look-swatches {
+  gap: 14px;
+}
+
+/* ---------- Wrapped picture frame ---------- */
+.wrapped-card img {
+  box-shadow: none;
+}
+
+/* leftover coloured shadows and teal text from older versions */
+.week-day-on,
+.day-sel,
+.pin-lock,
+.batch-state b {
+  box-shadow: none;
+}
+.welcome .welcome-go {
+  color: var(--accent);
+}

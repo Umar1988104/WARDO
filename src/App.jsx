@@ -24,7 +24,8 @@ import Settings from './screens/Settings.jsx'
 
 function loadTheme() {
   try {
-    return localStorage.getItem('wardo-theme') || 'auto'
+    const t = localStorage.getItem('wardo-theme') || 'auto'
+    return t === 'amoled' ? 'dark' : t // 'amoled' was the old name of the black dark theme
   } catch {
     return 'auto'
   }
@@ -112,22 +113,19 @@ export default function App() {
   const weather = useWeather()
 
   useEffect(() => {
-    // AMOLED is a dark theme with pure black: data-theme stays "dark" and data-amoled switches on the black styles
-    document.documentElement.dataset.theme = theme === 'amoled' ? 'dark' : theme
-    document.documentElement.dataset.amoled = theme === 'amoled' ? 'on' : 'off'
+    document.documentElement.dataset.theme = theme
     try {
       localStorage.setItem('wardo-theme', theme)
-      if (theme === 'dark' || theme === 'amoled') localStorage.setItem('wardo-last-dark', theme)
     } catch {
       /* storage can be unavailable; the theme just won't persist */
     }
     // keep the browser / Android status bar colour in sync with the chosen theme
-    const colour = theme === 'amoled' ? '#000000' : isDarkNow(theme) ? '#111715' : '#f7f3ee'
+    const colour = isDarkNow(theme) ? '#000000' : '#f2f2f7'
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
       m.removeAttribute('media')
       m.setAttribute('content', colour)
     })
-    applyPrefs() // theme packs and accent colours have a light and a dark version
+    applyPrefs() // the accent colour has a light and a dark shade
   }, [theme])
 
   // Android Back button: close the top layer, then step back through screens, and leave the app only from Home.
