@@ -3,6 +3,10 @@ import Screen from '../components/Screen.jsx'
 import { YouPanel, LookPanel, SpeedPanel, HabitsPanel } from '../components/LookAndFeel.jsx'
 import WeatherSettings from '../components/WeatherSettings.jsx'
 import Switch from '../components/Switch.jsx'
+import CountNumber from '../components/CountNumber.jsx'
+import { ArchiveIcon, BoltIcon, CloudIcon, HangerIcon, InfoIcon, LockIcon, PaletteIcon, PencilIcon } from '../components/SetIcons.jsx'
+import { formatMoney } from '../lib/money.js'
+import { todayKey } from '../lib/dates.js'
 import { PinFlow } from '../components/PinPad.jsx'
 import { setLockApp, setLockInner } from '../lib/lock.js'
 import { accentName, currentPreset, usePrefs } from '../lib/prefs.js'
@@ -22,27 +26,35 @@ import {
 const mb = (bytes) => (bytes / 1048576 >= 10 ? Math.round(bytes / 1048576) : Math.round((bytes / 1048576) * 10) / 10)
 const fmtDate = (t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
-// One tappable title with its contents folded away until it is opened.
-function ProfRow({ id, icon, title, status, open, onToggle, children }) {
+// One row in a settings group: a coloured icon, a name, the current value and a chevron.
+// Tap it and its options unfold underneath.
+function SetRow({ id, icon, color, title, value, open, onToggle, children }) {
   const isOpen = open === id
   return (
-    <section className="prof-row glass">
-      <button className="prof-row-head" aria-expanded={isOpen} onClick={() => onToggle(id)}>
-        <span className="prof-ico">{icon}</span>
-        <span className="prof-row-text">
-          <strong>{title}</strong>
-          <span className="muted">{status}</span>
+    <div className="set-item">
+      <button className="set-row" aria-expanded={isOpen} onClick={() => onToggle(id)}>
+        <span className="set-ico" style={{ background: color }}>
+          {icon}
         </span>
+        <span className="set-title">{title}</span>
+        <span className="set-value">{value}</span>
         <i className={'prof-chev' + (isOpen ? ' prof-chev-open' : '')} aria-hidden="true">
           ›
         </i>
       </button>
-      {isOpen && <div className="prof-body group">{children}</div>}
-    </section>
+      {isOpen && <div className="set-body group">{children}</div>}
+    </div>
   )
 }
 
-export default function Settings({ theme, setTheme, itemCount, actions, privacy, onPrivacyChange }) {
+const SetGroup = ({ label, children }) => (
+  <>
+    <h3 className="set-label">{label}</h3>
+    <section className="set-group glass">{children}</section>
+  </>
+)
+
+export default function Settings({ theme, setTheme, itemCount, items = [], wearInfo = {}, actions, privacy, onPrivacyChange }) {
   const [flow, setFlow] = useState(null) // 'set' | 'change' | 'remove'
   const [open, setOpen] = useState(null) // which Profile section is unfolded
   const prefs = usePrefs()
@@ -178,12 +190,11 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
       : 'Not supported here'
 
   const preset = currentPreset(prefs)
-  const tiles = [
-    { id: 'look', icon: '🎨', title: 'Look', status: accentName(prefs.accent) },
-    { id: 'speed', icon: '⚡', title: 'Speed', status: preset === 'custom' ? 'Custom' : preset[0].toUpperCase() + preset.slice(1) },
-    { id: 'weather', icon: '⛅', title: 'Weather', status: prefs.weatherOn ? prefs.place?.name?.split(',')[0] || 'Pick a place' : 'Off' },
-    { id: 'habits', icon: '👕', title: 'Wardrobe', status: 'Laundry, grid, start' },
-  ]
+  const month = todayKey().slice(0, 7)
+  const wornThisMonth = items.reduce((n, i) => n + [...(wearInfo[i.id]?.dates || [])].filter((d) => d.startsWith(month)).length, 0)
+  const priced = items.filter((i) => i.price != null)
+  const totalValue = priced.reduce((sum, i) => sum + i.price, 0)
+  const presetLabel = preset === 'custom' ? 'Custom' : preset[0].toUpperCase() + preset.slice(1)
 
   const canPersist = typeof navigator !== 'undefined' && !!navigator.storage?.persist
 
@@ -203,41 +214,71 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
           )
       }
     >
-      <button className="me-card glass" aria-expanded={open === 'you'} onClick={() => toggle('you')}>
-        <span className="me-avatar">{(prefs.name.trim()[0] || 'W').toUpperCase()}</span>
-        <span className="me-text">
-          <strong>{prefs.name.trim() || 'Your name'}</strong>
-          <span className="muted">{prefs.title.trim() || 'Tap to add a name and title'}</span>
-        </span>
-        <i className={'prof-chev' + (open === 'you' ? ' prof-chev-open' : '')} aria-hidden="true">
-          ›
-        </i>
-      </button>
-      {open === 'you' && (
-        <div className="prof-panel group glass">
-          <YouPanel />
+      <section className="prof-hero glass">
+        <button className="hero-main" aria-expanded={open === 'you'} onClick={() => toggle('you')}>
+          <span className="hero-avatar">{(prefs.name.trim()[0] || 'W').toUpperCase()}</span>
+          <span className="hero-text">
+            <strong>{prefs.name.trim() || 'Your name'}</strong>
+            <span className="muted">{prefs.title.trim() || 'Add a name and title'}</span>
+          </span>
+          <span className="hero-edit" aria-hidden="true">
+            <PencilIcon />
+          </span>
+        </button>
+        {open === 'you' && (
+          <div className="hero-fields group">
+            <YouPanel />
+          </div>
+        )}
+        <div className="hero-stats">
+          <div>
+            <strong>
+              <CountNumber to={items.length} />
+            </strong>
+            <span>Items</span>
+          </div>
+          <div>
+            <strong>
+              <CountNumber to={wornThisMonth} />
+            </strong>
+            <span>Wears this month</span>
+          </div>
+          <div>
+            <strong>{priced.length > 0 ? <CountNumber to={Math.round(totalValue)} format={(n) => formatMoney(n, prefs.currency)} /> : '–'}</strong>
+            <span>Wardrobe value</span>
+          </div>
         </div>
-      )}
+      </section>
 
-      <div className="prof-tiles">
-        {tiles.map((t) => (
-          <button key={t.id} className={'prof-tile glass' + (open === t.id ? ' prof-tile-on' : '')} aria-expanded={open === t.id} onClick={() => toggle(t.id)}>
-            <span className="prof-ico">{t.icon}</span>
-            <strong>{t.title}</strong>
-            <span className="muted">{t.status}</span>
-          </button>
-        ))}
-      </div>
-      {tiles.some((t) => t.id === open) && (
-        <div className="prof-panel group glass">
-          {open === 'look' && <LookPanel theme={theme} setTheme={setTheme} />}
-          {open === 'speed' && <SpeedPanel />}
-          {open === 'weather' && <WeatherSettings />}
-          {open === 'habits' && <HabitsPanel />}
-        </div>
-      )}
+      <SetGroup label="Appearance">
+        <SetRow id="look" icon={<PaletteIcon />} color="#af52de" title="Look" value={accentName(prefs.accent)} open={open} onToggle={toggle}>
+          <LookPanel theme={theme} setTheme={setTheme} />
+        </SetRow>
+        <SetRow id="speed" icon={<BoltIcon />} color="#ff9500" title="Speed" value={presetLabel} open={open} onToggle={toggle}>
+          <SpeedPanel />
+        </SetRow>
+      </SetGroup>
 
-      <ProfRow id="privacy" icon="🔒" title="Privacy" status={privacy.pin ? 'PIN is on' : 'No PIN'} open={open} onToggle={toggle}>
+      <SetGroup label="Wardrobe">
+        <SetRow
+          id="weather"
+          icon={<CloudIcon />}
+          color="#0a84ff"
+          title="Weather"
+          value={prefs.weatherOn ? prefs.place?.name?.split(',')[0] || 'Pick a place' : 'Off'}
+          open={open}
+          onToggle={toggle}
+        >
+          <WeatherSettings />
+        </SetRow>
+        <SetRow id="habits" icon={<HangerIcon />} color="#30b0c7" title="Preferences" value={`${prefs.cols} columns`} open={open} onToggle={toggle}>
+          <HabitsPanel />
+        </SetRow>
+      </SetGroup>
+
+      <h3 className="set-label">Privacy and data</h3>
+      <section className="set-group glass">
+        <SetRow id="privacy" icon={<LockIcon />} color="#34c759" title="Privacy" value={privacy.pin ? 'PIN on' : 'Off'} open={open} onToggle={toggle}>
         <p className="muted group-note">
           A PIN keeps casual eyes out, and can hide your Innerwear section. Photos on the phone are not encrypted, and backup files are not locked.
         </p>
@@ -276,9 +317,17 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
             </div>
           </>
         )}
-      </ProfRow>
+        </SetRow>
 
-      <ProfRow id="backup" icon="🗂️" title="Backup and restore" status={lastBackup ? 'Last: ' + fmtDate(lastBackup) : 'Never backed up'} open={open} onToggle={toggle}>
+        <SetRow
+          id="backup"
+          icon={<ArchiveIcon />}
+          color="#5e5ce6"
+          title="Backup and restore"
+          value={lastBackup ? new Date(lastBackup).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : 'Never'}
+          open={open}
+          onToggle={toggle}
+        >
         <p className="muted group-note">
           Everything stays on this phone. A backup file holds all your clothes, folders, wear history and outfits.
         </p>
@@ -337,9 +386,13 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
             <p className="muted small">Add skips pieces that are already here. Replace erases what is on this phone first.</p>
           </div>
         )}
-      </ProfRow>
+        </SetRow>
+      </section>
 
-      <ProfRow id="storage" icon="💾" title="Storage and about" status={storage.usage != null ? `${mb(storage.usage)} MB · Wardo ${APP_VERSION}` : `Wardo ${APP_VERSION}`} open={open} onToggle={toggle}>
+
+      <h3 className="set-label">About</h3>
+      <section className="set-group glass">
+        <SetRow id="storage" icon={<InfoIcon />} color="#8e8e93" title="Storage and about" value={storage.usage != null ? `${mb(storage.usage)} MB` : `v${APP_VERSION}`} open={open} onToggle={toggle}>
         <div className="row">
           <span>Storage</span>
           <span className="muted">{storage.usage != null ? `${mb(storage.usage)} MB used` : 'Unknown'}</span>
@@ -397,7 +450,8 @@ export default function Settings({ theme, setTheme, itemCount, actions, privacy,
             </li>
           </ul>
         </div>
-      </ProfRow>
+        </SetRow>
+      </section>
     </Screen>
   )
 }

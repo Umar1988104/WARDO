@@ -273,7 +273,7 @@ export default function App() {
       {tab === 'insights' && (
         <Insights items={shownItems} goneItems={goneItems} wears={wears} wearInfo={wearInfo} outfits={outfits} onOpenItem={setOpenId} onBack={() => setTab('home')} />
       )}
-      {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} itemCount={items.length} actions={actions} privacy={privacy} onPrivacyChange={refreshPrivacy} />}
+      {tab === 'settings' && <Settings theme={theme} setTheme={setTheme} itemCount={items.length} items={shownItems} wearInfo={wearInfo} actions={actions} privacy={privacy} onPrivacyChange={refreshPrivacy} />}
 
       <ThemeToggle theme={theme} setTheme={setTheme} />
       <TabBar
